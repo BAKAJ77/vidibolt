@@ -362,3 +362,9 @@ FodyWeavers.xsd
 /bin/vidibolt
 /objs
 /test/bin
+/test/sha256_test.vcxproj
+/test/blockchain_test.vcxproj
+/vidibolt.sln
+/vidibolt/vidibolt.vcxproj.filters
+/vidibolt/vidibolt.vcxproj
+/vidibolt/cpp.hint
