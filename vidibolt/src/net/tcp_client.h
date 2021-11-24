@@ -3,6 +3,7 @@
 
 #include <util/volt_api.h>
 #include <util/thread_safe_deque.h>
+#include <util/error_identifier.h>
 #include <net/tcp_connection.h>
 #include <net/message.h>
 #include <boost/asio.hpp>
@@ -30,7 +31,7 @@ namespace Volt
 		/*
 			Connects to server-side of peer with the ipv4 address specified.
 		*/
-		void Connect(const std::string& address);
+		ErrorID Connect(const std::string& address);
 
 		/*
 			Closes the currently open connection.
@@ -45,7 +46,7 @@ namespace Volt
 		/*
 			Transmits all pending messages and recieves all pending incoming messages.
 		*/
-		void UpdateState();
+		ErrorID UpdateState();
 
 		/*
 			Returns a queue of recieved messages.

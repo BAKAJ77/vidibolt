@@ -2,6 +2,7 @@
 #define VIDIBOLT_ECDSA_H
 
 #include <util/volt_api.h>
+#include <util/error_identifier.h>
 #include <vector>
 #include <string>
 
@@ -12,9 +13,10 @@ namespace Volt
 {
 	class VOLT_API ECKeyPair
 	{
-		friend VOLT_API std::vector<uint8_t> GetSignedSHA256Digest(const std::vector<uint8_t>& message, const ECKeyPair& key);
-		friend VOLT_API int VerifySHA256Digest(const std::vector<uint8_t>& originalMessage, 
-			const std::vector<uint8_t>& signiture, const ECKeyPair& key);
+		friend VOLT_API ErrorID GetSignedSHA256Digest(const std::vector<uint8_t>& message, const ECKeyPair& key,
+			std::vector<uint8_t>& signitureDigestOutput);
+		friend VOLT_API ErrorID VerifySHA256Digest(const std::vector<uint8_t>& originalMessage, const ECKeyPair& key,
+			const std::vector<uint8_t>& signiture, int& signitureValid);
 	private:
 		EVP_PKEY_CTX* keyGenCtx;
 		EVP_PKEY* keyPair;
@@ -22,14 +24,15 @@ namespace Volt
 		/*
 			Call this constructor if you want a public and private key to be generated automatically.
 		*/
-		ECKeyPair();
+		ECKeyPair(ErrorID* error = nullptr);
 
 		/*
 			Call this constructor if you want to set the public and private key manually.
 			NOTE: A public key must be given, though you don't need to pass a private key.
 		*/
-		ECKeyPair(const std::string& publicKey, const std::string& privateKey = "");
+		ECKeyPair(const std::string& publicKey, const std::string& privateKey = "", ErrorID* error = nullptr);
 		
+		ECKeyPair(const ECKeyPair&) = delete;
 		~ECKeyPair();
 
 		/*

@@ -5,6 +5,7 @@
 #include <net/message.h>
 #include <util/volt_api.h>
 #include <util/thread_safe_deque.h>
+#include <util/error_identifier.h>
 #include <memory>
 
 using namespace boost;
@@ -25,18 +26,14 @@ namespace Volt
 		/*
 			Callback handler function which checks for errors once the message data has been sent.
 		*/
-		void OnTransmissionCompletion(const system::error_code& ec, size_t bytesSent);
+		void OnTransmissionCompletion(const system::error_code& ec, size_t bytesSent, system::error_code& ecOut);
 
 		/*
 			Callback handler function which receieves and reads the payload data of the incoming message once the header
 			of the message has been fully recieved and read, also errors are checked for.
 		*/
-		void OnRecieveCompletion(const system::error_code& ec, size_t bytesRecieved, const std::vector<uint8_t>& buffer);
-
-		/*
-			Checks if the remote host has disconnected and outputs error accordingly.
-		*/
-		void CheckConnectionErrors(const system::error_code& ec);
+		void OnRecieveCompletion(const system::error_code& ec, size_t bytesRecieved, const std::vector<uint8_t>& buffer,
+			system::error_code& ecOut);
 
 		/*
 			Sets up the vector buffer given by allocating the amount of memory specified.
@@ -60,8 +57,10 @@ namespace Volt
 
 		/*
 			Transmits all pending outbound messages and recieves all pending inbound messages.
+			ErrorID::NONE is returned if no error occurs, else an specific error enum value will be returned based
+			on the error that occurred;
 		*/
-		void FlushSocket();
+		ErrorID FlushSocket();
 
 		/*
 			Returns the socket which the connection is established through.

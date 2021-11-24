@@ -1,5 +1,4 @@
 #include <net/tcp_client.h>
-#include <util/error_handler.h>
 
 namespace Volt
 {
@@ -13,7 +12,7 @@ namespace Volt
 		this->Disconnect(); 
 	}
 
-	void TCPClient::Connect(const std::string& address)
+	ErrorID TCPClient::Connect(const std::string& address)
 	{
 		// Setup connection shared pointer object, then resolve endpoints
 		ConnectionPtr connection = Volt::CreateConnection(this->inboundMsgs);
@@ -25,9 +24,11 @@ namespace Volt
 
 		// Check for errors
 		if (ec)
-			ErrorHandler::GetHandler().PushError(ec.message(), ErrorID::CONNECTION_INIT_ERROR, false);
+			return (ErrorID)ec.value();
 		else
 			this->outboundConnection = std::move(connection);
+
+		return ErrorID::NONE;
 	}
 
 	void TCPClient::Disconnect() { this->outboundConnection.reset(); }
@@ -38,7 +39,15 @@ namespace Volt
 			this->outboundConnection->PushOutboundMessage(msg);
 	}
 
-	void TCPClient::UpdateState() { this->outboundConnection->FlushSocket(); }
+	ErrorID TCPClient::UpdateState() 
+	{ 
+		ErrorID error = this->outboundConnection->FlushSocket(); 
+		if (error != ErrorID::NONE)
+			this->outboundConnection.reset();
+
+		return error;
+	}
+
 	Deque<RecievedMessage>& TCPClient::GetInboundMessages() { return this->inboundMsgs; }
 	const uint32_t& TCPClient::GetPortNumber() const { return this->port; }
 }

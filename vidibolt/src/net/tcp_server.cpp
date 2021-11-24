@@ -1,11 +1,11 @@
 #include <net/tcp_server.h>
-#include <util/error_handler.h>
 #include <boost/bind/bind.hpp>
 
 namespace Volt
 {
 	TCPServer::TCPServer(uint32_t port, bool startListener) :
-		port(port), isListening(startListener), acceptor(ctx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+		port(port), isListening(startListener), acceptor(ctx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
+		listenerErrorState(ErrorID::NONE)
 	{
 		if (startListener)
 		{
@@ -21,7 +21,7 @@ namespace Volt
 		if (!ec)
 			this->inboundConnections.PushBackElement(connection);
 		else
-			ErrorHandler::GetHandler().PushError(ec.message(), ErrorID::CONNECTION_INIT_ERROR);
+			this->listenerErrorState = (ErrorID)ec.value();
 
 		this->StartListener();
 	}
@@ -64,12 +64,19 @@ namespace Volt
 		// Flush all inbound connection sockets (aka transmit all outbound messages and recieve all inbound messages)
 		for (size_t i = 0; i < this->inboundConnections.GetSize(); i++)
 		{
+			ErrorID errorID = ErrorID::NONE;
+
 			ConnectionPtr& connection = this->inboundConnections[i];
 			if (connection && connection->IsSocketOpen())
-				connection->FlushSocket();
+				errorID = connection->FlushSocket();
+
+			// Check for thrown connection errors
+			if (errorID == ErrorID::CONNECTION_RESET_ERROR || errorID == ErrorID::NOT_CONNECTED_ERROR || 
+				errorID == ErrorID::EOF_ERROR)
+				connection->CloseSocket();
 		}
 
-		// Pop connection if socket has been closed
+		// Pop connection if socket has been closed or connection pointer isn't valid
 		if (!this->inboundConnections.IsEmpty())
 		{
 			const ConnectionPtr& connection = this->inboundConnections.GetFrontElement();
@@ -81,4 +88,5 @@ namespace Volt
 	Deque<RecievedMessage>& TCPServer::GetInboundMessages() { return this->inboundMsgs; }
 	const uint32_t& TCPServer::GetPortNumber() const { return this->port; }
 	bool TCPServer::IsListening() const { return this->isListening; }
+	const ErrorID& TCPServer::GetListenerErrorState() const { return this->listenerErrorState; }
 }

@@ -3,6 +3,7 @@
 
 #include <util/volt_api.h>
 #include <util/thread_safe_deque.h>
+#include <util/error_identifier.h>
 #include <net/tcp_connection.h>
 #include <net/message.h>
 #include <boost/asio.hpp>
@@ -24,6 +25,8 @@ namespace Volt
 		Deque<ConnectionPtr> inboundConnections;
 		Deque<RecievedMessage> inboundMsgs;
 		bool isListening;
+
+		ErrorID listenerErrorState;
 	private:
 		/*
 			Callback hander function which pushes the accepted inbound connection to the queue of open connections if
@@ -73,6 +76,11 @@ namespace Volt
 			Returns TRUE if the listener is actively listening for new connections, else FALSE is returned.
 		*/
 		bool IsListening() const;
+
+		/*
+			Returns enum value indicating if an error (relating to the listening operation) has occured.
+		*/
+		const ErrorID& GetListenerErrorState() const;
 	};
 }
 
