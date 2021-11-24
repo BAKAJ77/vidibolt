@@ -17,6 +17,9 @@
 /*
 	Calls given VOLT function then checks for and outputs errors silently thrown (errors which didn't result in an exception
 	being thrown).
+
+	It is recommended to use this macro when calling VOLT functions as to catch any errors immediately after the
+	function's execution (or you can do this error checking manually via the ErrorHandler class).
 */
 #define VOLT_ERROR_CHECK(volt_func) volt_func; \
 		if(Volt::ErrorHandler::GetHandler().GetLatestError().id != Volt::ErrorID::NONE) \
