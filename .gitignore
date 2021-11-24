@@ -369,3 +369,5 @@ FodyWeavers.xsd
 /vidibolt/vidibolt.vcxproj
 /vidibolt/cpp.hint
 *.vcxproj
+/libs
+/bin
