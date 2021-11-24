@@ -1,9 +1,9 @@
 #include <util/timestamp.h>
-#include <ctime>
+#include <type_traits>
 
-namespace VOLT
+namespace Volt
 {
-	std::string GetCurrentTimestamp()
+	std::string GetTimeStampStr()
 	{
 		// Get the current date and time data
 		std::time_t currentTime = std::time(nullptr);
@@ -50,5 +50,14 @@ namespace VOLT
 		}
 
 		return generatedTimestamp;
+	}
+
+	uint64_t GetTimeSinceEpoch()
+	{
+		static_assert(std::is_integral<std::chrono::system_clock::rep>::value, 
+			"Representation of ticks isn't an integral value.");
+
+		auto now = std::chrono::system_clock::now().time_since_epoch();
+		return std::chrono::duration_cast<std::chrono::seconds>(now).count();
 	}
 }

@@ -1,7 +1,7 @@
 #include <util/random_generation.h>
 #include <random>
 
-namespace VOLT
+namespace Volt
 {
 	int GenerateRandomInt(int min, int max)
 	{

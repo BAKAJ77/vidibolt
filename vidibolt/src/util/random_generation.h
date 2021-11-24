@@ -1,9 +1,9 @@
-#ifndef RANDOM_GENERATION_H
-#define RANDOM_GENERATION_H
+#ifndef VIDIBOLT_RANDOM_GENERATION_H
+#define VIDIBOLT_RANDOM_GENERATION_H
 
 #include <util/volt_api.h>
 
-namespace VOLT
+namespace Volt
 {
 	/*
 		Returns an random integer between the min and max values given.

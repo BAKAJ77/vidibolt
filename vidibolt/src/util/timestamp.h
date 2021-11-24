@@ -1,15 +1,21 @@
-#ifndef TIMESTAMP_H
-#define TIMESTAMP_H
+#ifndef VIDIBOLT_TIMESTAMP_H
+#define VIDIBOLT_TIMESTAMP_H
 
 #include <util/volt_api.h>
+#include <chrono>
 #include <string>
 
-namespace VOLT
+namespace Volt
 {
 	/* 
 		Returns a string of the retrieved current date and time data.
 	*/
-	VOLT_API std::string GetCurrentTimestamp();
+	extern VOLT_API std::string GetTimeStampStr();
+
+	/*
+		Returns time that has passed (in seconds) since epoch (1st Jan 1970).
+	*/
+	extern VOLT_API uint64_t GetTimeSinceEpoch();
 }
 
 #endif

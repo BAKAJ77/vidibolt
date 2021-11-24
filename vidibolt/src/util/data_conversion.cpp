@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iomanip>
 
-namespace VOLT
+namespace Volt
 {
 	std::vector<uint8_t> ConvertHexToByteData(const std::string& hex)
 	{

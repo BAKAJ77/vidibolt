@@ -1,11 +1,11 @@
-#ifndef DATA_CONVERSIONS_H
-#define DATA_CONVERSIONS_H
+#ifndef VIDIBOLT_DATA_CONVERSIONS_H
+#define VIDIBOLT_DATA_CONVERSIONS_H
 
 #include <util/volt_api.h>
 #include <string>
 #include <vector>
 
-namespace VOLT
+namespace Volt
 {
 	/*
 		Returns vector array of bytes representing the resulting data from converting from a hex format to a byte format.

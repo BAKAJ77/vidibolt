@@ -1,5 +1,5 @@
-#ifndef VOLT_API_H
-#define VOLT_API_H
+#ifndef VIDIBOLT_VOLT_API_H
+#define VIDIBOLT_VOLT_API_H
 
 #ifdef VOLT_PLATFORM_WINDOWS
 	#ifdef VOLT_EXPORTS
