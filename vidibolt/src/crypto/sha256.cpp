@@ -1,15 +1,15 @@
 #include <crypto/sha256.h>
-#include <util/log_handler.h>
+#include <util/error_handler.h>
 #include <openssl/evp.h>
 
-namespace VOLT
+namespace Volt
 {
 	VOLT_API std::vector<uint8_t> GetSHA256Digest(const std::vector<uint8_t>& message)
 	{
 		// Make sure the message data array isn't empty
 		if (message.empty())
-			LogHandler::GetHandler().PushLog("The message data array passed to SHA256 hash function must not be empty",
-				LogSeverity::FATAL);
+			ErrorHandler::GetHandler().PushError("The message data array passed to SHA256 hash function must not be empty", 
+				ErrorID::SHA256_DIGEST_ERROR);
 
 		EVP_MD_CTX* digestCtx = nullptr;
 		EVP_MD* digestImpl = nullptr;
@@ -39,7 +39,8 @@ namespace VOLT
 	{
 		// Make sure a private key is assigned to the key pair given
 		if (!key.HasPrivateKey())
-			LogHandler::GetHandler().PushLog("EC key pair object given is missing a private key", LogSeverity::FATAL);
+			ErrorHandler::GetHandler().PushError("EC key pair object given is missing a private key", 
+				ErrorID::ECDSA_KEY_PAIR_ERROR);
 
 		EVP_MD_CTX* digestSignCtx = nullptr;
 		EVP_MD* digestImpl = nullptr;
@@ -75,7 +76,8 @@ namespace VOLT
 	{
 		// Make sure a public key is assigned to the key pair given
 		if (!key.HasPublicKey())
-			LogHandler::GetHandler().PushLog("EC key pair object given is missing a public key", LogSeverity::FATAL);
+			ErrorHandler::GetHandler().PushError("EC key pair object given is missing a public key",
+				ErrorID::ECDSA_KEY_PAIR_ERROR);
 
 		EVP_MD_CTX* digestSignVerifyCtx = nullptr;
 		EVP_MD* digestImpl = nullptr;

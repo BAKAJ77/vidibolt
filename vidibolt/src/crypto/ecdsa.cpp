@@ -2,10 +2,10 @@
 #include <openssl/evp.h>
 #include <openssl/ec.h>
 #include <openssl/ecdsa.h>
-#include <util/log_handler.h>
+#include <util/error_handler.h>
 #include <algorithm>
 
-namespace VOLT
+namespace Volt
 {
 	ECKeyPair::ECKeyPair() :
 		keyPair(nullptr), keyGenCtx(nullptr)
@@ -28,7 +28,7 @@ namespace VOLT
 		// Make sure the public key given was valid 
 		// Note that while a private key must be given, the private key isn't necessary
 		if (publicKey.size() != 70 || publicKey.substr(0, 4) != "vpk_")
-			LogHandler::GetHandler().PushLog("The public key given is invalid", LogSeverity::FATAL);
+			ErrorHandler::GetHandler().PushError("The public key given is invalid", ErrorID::ECDSA_KEY_PAIR_ERROR);
 
 		// Transform all the characters in the public key hex string to UPPERCASE
 		std::string pubKeyStr = publicKey, privKeyStr = privateKey;
@@ -124,8 +124,5 @@ namespace VOLT
 		return PRIVATE_KEY ? true : false;
 	}
 
-	bool ECKeyPair::IsValid() const
-	{
-		return EC_KEY_check_key(EVP_PKEY_get0_EC_KEY(this->keyPair));
-	}
+	bool ECKeyPair::IsValid() const { return EC_KEY_check_key(EVP_PKEY_get0_EC_KEY(this->keyPair)); }
 }

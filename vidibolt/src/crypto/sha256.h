@@ -1,11 +1,11 @@
-#ifndef SHA256_H
-#define SHA256_H
+#ifndef VIDIBOLT_SHA256_H
+#define VIDIBOLT_SHA256_H
 
 #include <util/data_conversion.h>
 #include <util/volt_api.h>
 #include <crypto/ecdsa.h>
 
-namespace VOLT
+namespace Volt
 {
 	/*
 		Returns resulting hash byte data from the SHA256 digest operation.

@@ -1,5 +1,5 @@
-#ifndef ECDSA_H
-#define ECDSA_H
+#ifndef VIDIBOLT_ECDSA_H
+#define VIDIBOLT_ECDSA_H
 
 #include <util/volt_api.h>
 #include <vector>
@@ -8,7 +8,7 @@
 typedef struct evp_pkey_st EVP_PKEY;
 typedef struct evp_pkey_ctx_st EVP_PKEY_CTX;
 
-namespace VOLT
+namespace Volt
 {
 	class VOLT_API ECKeyPair
 	{
