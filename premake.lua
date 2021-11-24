@@ -17,7 +17,7 @@ project "vidibolt"
     targetdir "bin/%{prj.name}/"
     objdir "objs/%{cfg.buildcfg}-%{cfg.architecture}/%{prj.name}/"
 
-    includedirs { "%{prj.name}/src", "libs/openssl/include" }
+    includedirs { "%{prj.name}/src", "libs/openssl/include", "libs/boost" }
     files { "%{prj.name}/src/**.h", "%{prj.name}/src/**.cpp", "%{prj.name}/src/**.tpp" }
     links { "libcrypto", "libssl" }
 
@@ -25,7 +25,7 @@ project "vidibolt"
 
     -- Project platform define macro based on identified system
     filter "system:windows"
-        defines { "VOLT_PLATFORM_WINDOWS" }
+        defines { "VOLT_PLATFORM_WINDOWS", "_WIN32_WINNT=0x0601" }
 
     filter "system:macosx"
         defines { "VOLT_PLATFORM_MACOSX" }
@@ -174,14 +174,14 @@ project "networking_test"
     targetdir "%{prj.location}/bin/%{cfg.buildcfg}-%{cfg.architecture}/"
     objdir "%{prj.location}/objs/%{cfg.buildcfg}-%{cfg.architecture}/%{prj.name}"
 
-    includedirs { "%{prj.location}/src", "vidibolt/src" }
+    includedirs { "%{prj.location}/src", "vidibolt/src", "libs/boost" }
     files { "%{prj.location}/src/%{prj.name}.cpp" }
 
     libdirs { "bin/vidibolt" }
 
     -- Project platform define macro based on identified system
     filter "system:windows"
-        defines { "VOLT_PLATFORM_WINDOWS" }
+        defines { "VOLT_PLATFORM_WINDOWS", "_WIN32_WINNT=0x0601" }
 
     filter "system:macosx"
         defines { "VOLT_PLATFORM_MACOSX" }
