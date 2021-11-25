@@ -2,8 +2,9 @@
 #define VIDIBOLT_TIMESTAMP_H
 
 #include <util/volt_api.h>
-#include <chrono>
+
 #include <string>
+#include <chrono>
 
 namespace Volt
 {

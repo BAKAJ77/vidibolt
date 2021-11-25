@@ -1,11 +1,13 @@
 #ifndef VIDIBOLT_TCP_CONNECTION_H
 #define VIDIBOLT_TCP_CONNECTION_H
 
-#include <boost/asio.hpp>
 #include <net/message.h>
 #include <util/volt_api.h>
 #include <util/thread_safe_deque.h>
 #include <util/error_identifier.h>
+
+#include <boost/asio.hpp>
+#include <vector>
 #include <memory>
 
 using namespace boost;

@@ -5,6 +5,7 @@
 #include <util/error_identifier.h>
 #include <util/volt_api.h>
 #include <crypto/ecdsa.h>
+#include <vector>
 
 namespace Volt
 {

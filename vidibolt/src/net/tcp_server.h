@@ -6,8 +6,11 @@
 #include <util/error_identifier.h>
 #include <net/tcp_connection.h>
 #include <net/message.h>
+
 #include <boost/asio.hpp>
 #include <thread>
+
+using namespace boost;
 
 namespace Volt
 {

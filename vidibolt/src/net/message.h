@@ -4,7 +4,7 @@
 #include <util/volt_api.h>
 #include <iostream>
 #include <vector>
-#include <memory>
+#include <string>
 
 namespace Volt
 {
