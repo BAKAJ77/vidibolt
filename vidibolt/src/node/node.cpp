@@ -1,6 +1,6 @@
 #include <node/node.h>
+#include <util/ts_unordered_map.h>
 
-#include <unordered_map>
 #include <string>
 
 namespace Volt
@@ -13,7 +13,7 @@ namespace Volt
 		TCPServer server;
 
 		uint32_t port;
-		std::unordered_map<uint64_t, std::string> peerList; // <guid : uint64_t, address : std::string>
+		UnorderedMap<uint64_t, std::string> peerList; // <guid : uint64_t, address : std::string>
 	private:
 		/*
 			Retrieves a unoccupied GUID to be assigned to the node.
@@ -29,7 +29,7 @@ namespace Volt
 		void RetrieveNodePeerList()
 		{
 			// We only need 64 nodes to be able to connect to any node in the network
-			this->peerList.reserve(64);
+			this->peerList.Reserve(64);
 		}
 	public:
 		Implementation(uint32_t port) :

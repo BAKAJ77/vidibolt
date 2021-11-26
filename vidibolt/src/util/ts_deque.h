@@ -26,64 +26,65 @@ namespace Volt
 
 			void PushBackElement(const U& data)
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				this->deque.push_back(data);
 			}
 
 			void PushFrontElement(const U& data)
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				this->deque.push_front(data);
 			}
 
 			void ClearElements()
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				this->deque.clear();
 			}
 
 			void PopFrontElement()
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				this->deque.pop_front();
 			}
 
 			void PopBackElement()
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				this->deque.pop_back();
 			}
 
 			const U& GetFrontElement()
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				return this->deque.front();
 			}
 
 			const U& GetBackElement()
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				return this->deque.back();
 			}
 
 			bool IsEmpty()
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				return this->deque.empty();
 			}
 
 			size_t GetSize()
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				return this->deque.size();
 			}
 
 			U& operator[](size_t index)
 			{
-				std::scoped_lock lock(mutex);
+				std::scoped_lock lock(this->mutex);
 				return this->deque[index];
 			}
 		};
+		
 		Implementation<T>* impl;
 	public:
 		Deque();

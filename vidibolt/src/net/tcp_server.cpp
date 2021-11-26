@@ -1,9 +1,9 @@
 #include <net/tcp_server.h>
 #include <net/tcp_connection.h>
+#include <util/ts_unordered_map.h>
 
 #include <boost/bind/bind.hpp>
 #include <boost/asio.hpp>
-#include <unordered_map>
 #include <thread>
 
 using namespace boost;
@@ -18,7 +18,7 @@ namespace Volt
 		std::thread listeningThread;
 		uint32_t port;
 
-		std::unordered_map<uint32_t, ConnectionPtr> inboundConnections;
+		UnorderedMap<uint32_t, ConnectionPtr> inboundConnections;
 		Deque<RecievedMessage> inboundMsgs;
 		bool isListening;
 
@@ -30,7 +30,7 @@ namespace Volt
 		void OnConnectionAccept(const system::error_code& ec, ConnectionPtr connection)
 		{
 			if (!ec)
-				this->inboundConnections.insert(std::pair<uint32_t, ConnectionPtr>(connection->GetID(), connection));
+				this->inboundConnections.Insert(connection->GetID(), connection);
 			else
 				this->listenerErrorState = (ErrorID)ec.value();
 
@@ -76,7 +76,7 @@ namespace Volt
 
 		ErrorID PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut)
 		{
-			if (this->inboundConnections.find(recvMsg.connectionID) != this->inboundConnections.end())
+			if (this->inboundConnections.ElementExists(recvMsg.connectionID))
 				this->inboundConnections[recvMsg.connectionID]->PushOutboundMessage(msgOut);
 			else
 				return ErrorID::CONNECTION_NO_LONGER_OPEN;
@@ -86,32 +86,32 @@ namespace Volt
 
 		void BroadcastOutboundMessage(const Message& msg)
 		{
-			for(auto& connection : this->inboundConnections)
-				connection.second->PushOutboundMessage(msg);
+			for(size_t i = 0; i < this->inboundConnections.GetSize(); i++)
+				this->inboundConnections.GetElementAtIndex(i)->PushOutboundMessage(msg);
 		}
 
 		void UpdateState()
 		{
 			// Flush all inbound connection sockets (aka transmit all outbound messages and recieve all inbound messages)
-			for (auto& connection : this->inboundConnections)
+			for (size_t i = 0; i < this->inboundConnections.GetSize(); i++)
 			{
 				ErrorID errorID = ErrorID::NONE;
-
-				if (connection.second && connection.second->IsSocketOpen())
-					errorID = connection.second->FlushSocket();
+				const ConnectionPtr& connection = this->inboundConnections.GetElementAtIndex(i);
+				if (connection && connection->IsSocketOpen())
+					errorID = connection->FlushSocket();
 
 				// Check for thrown connection errors
 				if (errorID == ErrorID::CONNECTION_RESET_ERROR || errorID == ErrorID::NOT_CONNECTED_ERROR ||
 					errorID == ErrorID::EOF_ERROR)
-					connection.second->CloseSocket();
+					connection->CloseSocket();
 			}
 
 			// Pop connection if socket has been closed or connection pointer isn't valid
-			if (!this->inboundConnections.empty())
+			if (!this->inboundConnections.IsEmpty())
 			{
-				const ConnectionPtr& connection = this->inboundConnections.begin()->second;
+				const ConnectionPtr& connection = this->inboundConnections.GetElementAtIndex(0); // Get element at begin of map
 				if (!connection || !connection->IsSocketOpen())
-					this->inboundConnections.erase(connection->GetID());
+					this->inboundConnections.Erase(connection->GetID());
 			}
 		}
 
