@@ -156,10 +156,13 @@ namespace Volt
 	struct RecievedMessage
 	{
 	public:
-		ConnectionPtr connection;
+		uint32_t connectionID;
 		Message transmittedMsg;
 	public:
-		RecievedMessage() = default;
+		RecievedMessage() :
+			connectionID(0)
+		{}
+
 		~RecievedMessage() = default;
 
 		/*

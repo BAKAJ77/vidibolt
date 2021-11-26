@@ -10,6 +10,9 @@ namespace Volt
 	{
 		NONE = 0,
 
+		// VOLT related errors
+		CONNECTION_NO_LONGER_OPEN = 20000,
+
 		// OpenSSL related error codes
 		MESSAGE_EMPTY = 40000,
 		DIGEST_UPDATE_FAILURE = 40001,

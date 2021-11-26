@@ -2,15 +2,9 @@
 #define VIDIBOLT_TCP_SERVER_H
 
 #include <util/volt_api.h>
-#include <util/thread_safe_deque.h>
+#include <util/ts_deque.h>
 #include <util/error_identifier.h>
-#include <net/tcp_connection.h>
 #include <net/message.h>
-
-#include <boost/asio.hpp>
-#include <thread>
-
-using namespace boost;
 
 namespace Volt
 {
@@ -20,22 +14,8 @@ namespace Volt
 	class VOLT_API TCPServer
 	{
 	private:
-		asio::io_context ctx;
-		asio::ip::tcp::acceptor acceptor;
-		std::thread listeningThread;
-		uint32_t port;
-
-		Deque<ConnectionPtr> inboundConnections;
-		Deque<RecievedMessage> inboundMsgs;
-		bool isListening;
-
-		ErrorID listenerErrorState;
-	private:
-		/*
-			Callback hander function which pushes the accepted inbound connection to the queue of open connections if
-			no errors are encountered when accepting.
-		*/
-		void OnConnectionAccept(const system::error_code& ec, ConnectionPtr connection);
+		class Implementation;
+		Implementation* impl;
 	public:
 		TCPServer(uint32_t port, bool startListener = true);
 		~TCPServer();
@@ -53,7 +33,7 @@ namespace Volt
 		/*
 			Pushes a message to be transmitted through the connection which the recieved message came from.
 		*/
-		void PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut);
+		ErrorID PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut);
 
 		/*
 			Pushes a message to be transmitted to all open connections in the queue.

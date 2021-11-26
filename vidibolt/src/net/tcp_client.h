@@ -2,15 +2,11 @@
 #define VIDIBOLT_TCP_CLIENT_H
 
 #include <util/volt_api.h>
-#include <util/thread_safe_deque.h>
+#include <util/ts_deque.h>
 #include <util/error_identifier.h>
-#include <net/tcp_connection.h>
 #include <net/message.h>
 
-#include <boost/asio.hpp>
 #include <string>
-
-using namespace boost;
 
 namespace Volt
 {
@@ -20,12 +16,8 @@ namespace Volt
 	class VOLT_API TCPClient
 	{
 	private:
-		asio::io_context ctx;
-		asio::ip::tcp::resolver resolver;
-		uint32_t port;
-
-		ConnectionPtr outboundConnection;
-		Deque<RecievedMessage> inboundMsgs;
+		class Implementation;
+		Implementation* impl;
 	public:
 		TCPClient(uint32_t port);
 		~TCPClient();
@@ -58,7 +50,7 @@ namespace Volt
 		/*
 			Returns the port number that connections are being opened on by the client.
 		*/
-		const uint32_t& GetPortNumber() const;
+		const uint32_t& GetPort() const;
 	};
 }
 

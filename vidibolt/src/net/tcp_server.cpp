@@ -1,92 +1,192 @@
 #include <net/tcp_server.h>
+#include <net/tcp_connection.h>
+
 #include <boost/bind/bind.hpp>
+#include <boost/asio.hpp>
+#include <unordered_map>
+#include <thread>
+
+using namespace boost;
 
 namespace Volt
 {
-	TCPServer::TCPServer(uint32_t port, bool startListener) :
-		port(port), isListening(startListener), acceptor(ctx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
-		listenerErrorState(ErrorID::NONE)
+	class TCPServer::Implementation
 	{
-		if (startListener)
+	private:
+		asio::io_context ctx;
+		asio::ip::tcp::acceptor acceptor;
+		std::thread listeningThread;
+		uint32_t port;
+
+		std::unordered_map<uint32_t, ConnectionPtr> inboundConnections;
+		Deque<RecievedMessage> inboundMsgs;
+		bool isListening;
+
+		ErrorID listenerErrorState;
+	private:
+		/*
+			Callback function which handles error checking and initiation of a connection when one is accepted.
+		*/
+		void OnConnectionAccept(const system::error_code& ec, ConnectionPtr connection)
 		{
+			if (!ec)
+				this->inboundConnections.insert(std::pair<uint32_t, ConnectionPtr>(connection->GetID(), connection));
+			else
+				this->listenerErrorState = (ErrorID)ec.value();
+
 			this->StartListener();
-			this->listeningThread = std::thread([&]() { this->ctx.run(); }); // Run IO context on seperate thread
 		}
-	}
+	public:
+		Implementation(uint32_t port, bool startListener) : port(port), isListening(startListener), 
+			acceptor(ctx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), listenerErrorState(ErrorID::NONE)
+		{
+			if (startListener)
+			{
+				this->StartListener();
+				this->listeningThread = std::thread([&]() { this->ctx.run(); }); // Run IO context on seperate thread
+			}
+		}
 
-	TCPServer::~TCPServer() { this->StopListener(); }
+		~Implementation()
+		{
+			this->StopListener();
+		}
 
-	void TCPServer::OnConnectionAccept(const system::error_code& ec, ConnectionPtr connection)
+		void StartListener()
+		{
+			// Setup connection shared pointer
+			ConnectionPtr connection = Volt::CreateConnection(this->inboundMsgs);
+
+			// Start asynchronous connection accept operation
+			this->acceptor.async_accept(connection->GetSocketObject(), boost::bind(&Implementation::OnConnectionAccept, this,
+				asio::placeholders::error, connection));
+
+			if (!this->isListening)
+				this->listeningThread = std::thread([&]() { this->ctx.run(); }); // Run IO context on seperate thread
+		}
+
+		void StopListener()
+		{
+			this->ctx.stop();
+			if (this->listeningThread.joinable())
+				this->listeningThread.join();
+
+			this->isListening = false;
+		}
+
+		ErrorID PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut)
+		{
+			if (this->inboundConnections.find(recvMsg.connectionID) != this->inboundConnections.end())
+				this->inboundConnections[recvMsg.connectionID]->PushOutboundMessage(msgOut);
+			else
+				return ErrorID::CONNECTION_NO_LONGER_OPEN;
+
+			return ErrorID::NONE;
+		}
+
+		void BroadcastOutboundMessage(const Message& msg)
+		{
+			for(auto& connection : this->inboundConnections)
+				connection.second->PushOutboundMessage(msg);
+		}
+
+		void UpdateState()
+		{
+			// Flush all inbound connection sockets (aka transmit all outbound messages and recieve all inbound messages)
+			for (auto& connection : this->inboundConnections)
+			{
+				ErrorID errorID = ErrorID::NONE;
+
+				if (connection.second && connection.second->IsSocketOpen())
+					errorID = connection.second->FlushSocket();
+
+				// Check for thrown connection errors
+				if (errorID == ErrorID::CONNECTION_RESET_ERROR || errorID == ErrorID::NOT_CONNECTED_ERROR ||
+					errorID == ErrorID::EOF_ERROR)
+					connection.second->CloseSocket();
+			}
+
+			// Pop connection if socket has been closed or connection pointer isn't valid
+			if (!this->inboundConnections.empty())
+			{
+				const ConnectionPtr& connection = this->inboundConnections.begin()->second;
+				if (!connection || !connection->IsSocketOpen())
+					this->inboundConnections.erase(connection->GetID());
+			}
+		}
+
+		Deque<RecievedMessage>& GetInboundMessages()
+		{
+			return this->inboundMsgs;
+		}
+
+		const uint32_t& GetPortNumber() const
+		{
+			return this->port;
+		}
+
+		bool IsListening() const
+		{
+			return this->isListening;
+		}
+
+		const ErrorID& GetListenerErrorState() const
+		{
+			return this->listenerErrorState;
+		}
+	};
+
+	TCPServer::TCPServer(uint32_t port, bool startListener) :
+		impl(new Implementation(port, startListener))
+	{}
+
+	TCPServer::~TCPServer() 
 	{
-		if (!ec)
-			this->inboundConnections.PushBackElement(connection);
-		else
-			this->listenerErrorState = (ErrorID)ec.value();
-
-		this->StartListener();
+		delete this->impl;
 	}
 
 	void TCPServer::StartListener()
 	{
-		// Setup connection shared pointer
-		ConnectionPtr connection = Volt::CreateConnection(this->inboundMsgs);
-
-		// Start asynchronous connection accept operation
-		this->acceptor.async_accept(connection->GetSocketObject(), boost::bind(&TCPServer::OnConnectionAccept, this,
-			asio::placeholders::error, connection));
-
-		if (!this->isListening)
-			this->listeningThread = std::thread([&]() { this->ctx.run(); }); // Run IO context on seperate thread
+		this->impl->StartListener();
 	}
 
 	void TCPServer::StopListener()
 	{
-		this->ctx.stop();
-		if (this->listeningThread.joinable())
-			this->listeningThread.join();
-
-		this->isListening = false;
+		this->impl->StopListener();
 	}
 
-	void TCPServer::PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut)
+	ErrorID TCPServer::PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut)
 	{
-		recvMsg.connection->PushOutboundMessage(msgOut);
+		return this->impl->PushOutboundResponseMessage(recvMsg, msgOut);
 	}
 
 	void TCPServer::BroadcastOutboundMessage(const Message& msg)
 	{
-		for (size_t i = 0; i < this->inboundConnections.GetSize(); i++)
-			this->inboundConnections[i]->PushOutboundMessage(msg);
+		this->impl->BroadcastOutboundMessage(msg);
 	}
 
 	void TCPServer::UpdateState()
 	{
-		// Flush all inbound connection sockets (aka transmit all outbound messages and recieve all inbound messages)
-		for (size_t i = 0; i < this->inboundConnections.GetSize(); i++)
-		{
-			ErrorID errorID = ErrorID::NONE;
-
-			ConnectionPtr& connection = this->inboundConnections[i];
-			if (connection && connection->IsSocketOpen())
-				errorID = connection->FlushSocket();
-
-			// Check for thrown connection errors
-			if (errorID == ErrorID::CONNECTION_RESET_ERROR || errorID == ErrorID::NOT_CONNECTED_ERROR || 
-				errorID == ErrorID::EOF_ERROR)
-				connection->CloseSocket();
-		}
-
-		// Pop connection if socket has been closed or connection pointer isn't valid
-		if (!this->inboundConnections.IsEmpty())
-		{
-			const ConnectionPtr& connection = this->inboundConnections.GetFrontElement();
-			if (!connection || !connection->IsSocketOpen())
-				this->inboundConnections.PopFrontElement();
-		}
+		this->impl->UpdateState();
 	}
 
-	Deque<RecievedMessage>& TCPServer::GetInboundMessages() { return this->inboundMsgs; }
-	const uint32_t& TCPServer::GetPortNumber() const { return this->port; }
-	bool TCPServer::IsListening() const { return this->isListening; }
-	const ErrorID& TCPServer::GetListenerErrorState() const { return this->listenerErrorState; }
+	Deque<RecievedMessage>& TCPServer::GetInboundMessages() 
+	{ 
+		return this->impl->GetInboundMessages(); 
+	}
+
+	const uint32_t& TCPServer::GetPortNumber() const 
+	{ 
+		return this->impl->GetPortNumber(); 
+	}
+
+	bool TCPServer::IsListening() const 
+	{ 
+		return this->impl->IsListening(); 
+	}
+
+	const ErrorID& TCPServer::GetListenerErrorState() const 
+	{ 
+		return this->impl->GetListenerErrorState(); 
+	}
 }

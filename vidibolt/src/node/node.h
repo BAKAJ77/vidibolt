@@ -1,34 +1,33 @@
 #ifndef VIDIBOLT_NODE_H
 #define VIDIBOLT_NODE_H
 
+#include <util/volt_api.h>
 #include <net/tcp_client.h>
 #include <net/tcp_server.h>
-#include <util/volt_api.h>
-#include <unordered_map>
 
 namespace Volt
 {
+	/*
+		Handles VOLT node functionality e.g. broadcasting data to other nodes, recieving data from other nodes etc.
+	*/
 	class VOLT_API Node
 	{
 	private:
-		uint64_t guid;
+		class Implementation;
+		Implementation* impl;
 	public:
-		TCPClient client;
-		TCPServer server;
-		std::unordered_map<uint64_t, std::string> peerList; // <guid : uint64_t, address : std::string>
-	private:
-		/*
-			Retrieves a unoccupied GUID to be assigned to the node.
-		*/
-		uint64_t RetrieveNodeGUID();
+		Node(uint32_t port = 60000);
+		~Node();
+
+		/* TEMPORARY FUNCTIONS */
+		TCPClient& GetClient();
+		TCPServer& GetServer();
+		/***********************/
 
 		/*
-			Retrieves unordered map table of peers for connection routing.
+			Returns the port number being used by node.
 		*/
-		void RetrieveNodePeerList();
-	public:
-		Node(uint32_t port);
-		~Node();
+		const uint32_t& GetPort() const;
 
 		/*
 			Returns the GUID of the node.

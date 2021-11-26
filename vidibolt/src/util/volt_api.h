@@ -4,8 +4,10 @@
 #ifdef VOLT_PLATFORM_WINDOWS
 	#ifdef VOLT_EXPORTS
 		#define VOLT_API __declspec(dllexport)
+		#define VOLT_EXPORT VOLT_API
 	#else
 		#define VOLT_API __declspec(dllimport)
+		#define VOLT_EXPORT __declspec(dllexport)
 	#endif
 #else
 	#define VOLT_API

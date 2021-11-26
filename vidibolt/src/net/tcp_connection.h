@@ -3,11 +3,10 @@
 
 #include <net/message.h>
 #include <util/volt_api.h>
-#include <util/thread_safe_deque.h>
+#include <util/ts_deque.h>
 #include <util/error_identifier.h>
 
 #include <boost/asio.hpp>
-#include <vector>
 #include <memory>
 
 using namespace boost;
@@ -17,32 +16,11 @@ namespace Volt
 	/*
 		Handles transmission of data between two endpoints.
 	*/
-	class VOLT_API Connection : public std::enable_shared_from_this<Connection>
+	class VOLT_API Connection
 	{
 	private:
-		asio::io_context ctx;
-		asio::ip::tcp::socket socket;
-		Deque<RecievedMessage>& inboundMsgs;
-		Deque<Message> outboundMsgs;
-	private:
-		/*
-			Callback handler function which checks for errors once the message data has been sent.
-		*/
-		void OnTransmissionCompletion(const system::error_code& ec, size_t bytesSent, system::error_code& ecOut);
-
-		/*
-			Callback handler function which receieves and reads the payload data of the incoming message once the header
-			of the message has been fully recieved and read, also errors are checked for.
-		*/
-		void OnRecieveCompletion(const system::error_code& ec, size_t bytesRecieved, const std::vector<uint8_t>& buffer,
-			system::error_code& ecOut);
-
-		/*
-			Sets up the vector buffer given by allocating the amount of memory specified.
-			The data in the buffer (if any) is cleared before allocating by default but this can be prevented via the 
-			'clearBuffer' parameter.
-		*/
-		void SetupBuffer(std::vector<uint8_t>& buffer, size_t bufferSizeReq, bool clearBuffer = true) const;
+		class Implementation;
+		Implementation* impl;
 	public:
 		Connection(Deque<RecievedMessage>& msgsIn);
 		~Connection();
@@ -73,6 +51,11 @@ namespace Volt
 			Returns TRUE if the socket is open, else FALSE is returned.
 		*/
 		bool IsSocketOpen() const;
+
+		/*
+			Returns the ID assigned to the connection object.
+		*/
+		const uint32_t& GetID() const;
 	};
 
 	typedef std::shared_ptr<Connection> ConnectionPtr;
