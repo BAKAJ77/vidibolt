@@ -146,9 +146,6 @@ namespace Volt
 		}
 	};
 
-	class Connection;
-	typedef std::shared_ptr<Connection> ConnectionPtr;
-
 	/*
 		Struct which is basically the same as the Message struct however this one is tied to a specific TCP connection
 		with a remote host.
