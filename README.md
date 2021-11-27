@@ -7,4 +7,4 @@ is used to store video data (streamed or not) and record transactions made using
 generic transfers between two people.
 
 ## License
-Vidibolt Core is released under the terms of the MIT license. See [COPYING](LICENSE.md) for more information or see https://opensource.org/licenses/MIT.
+Vidibolt Core is released under the terms of the MIT license. See [LICENSE](LICENSE) for more information or see https://opensource.org/licenses/MIT.
