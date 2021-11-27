@@ -3,7 +3,7 @@
 
 namespace Volt
 {
-	VOLT_API ErrorID GetSHA256Digest(const std::vector<uint8_t>& message, std::vector<uint8_t>& digestOutput)
+	ErrorID GetSHA256Digest(const std::vector<uint8_t>& message, std::vector<uint8_t>& digestOutput)
 	{
 		// Make sure the message data array isn't empty
 		if (message.empty())
