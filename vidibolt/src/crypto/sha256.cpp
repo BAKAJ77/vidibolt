@@ -120,8 +120,6 @@ namespace Volt
 			return ErrorID::OPERATION_INIT_FAILURE;
 
 		// Give the signiture verification digest operation themessage data passed and get the length of the signiture
-		size_t signitureLength = 0;
-
 		if (EVP_DigestVerifyUpdate(digestSignVerifyCtx, originalMessage.data(), originalMessage.size() * sizeof(uint8_t)) <= 0)
 			return ErrorID::DIGEST_UPDATE_FAILURE;
 
