@@ -101,6 +101,11 @@ namespace Volt
 		return errorID;
 	}
 
+	std::string SerializeTransaction(const Transaction& tx)
+	{
+		return json::serialize(json::value_from(tx));
+	}
+
 	void tag_invoke(json::value_from_tag, json::value& obj, const Transaction& tx)
 	{
 		obj = {

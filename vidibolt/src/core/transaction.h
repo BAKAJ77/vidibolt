@@ -43,6 +43,11 @@ namespace Volt
 		friend extern VOLT_API ErrorID VerifyTransaction(const Transaction& tx, bool& txValid);
 
 		/*
+			Returns string containing the transaction data that has been serialized into a JSON format.
+		*/
+		friend extern VOLT_API std::string SerializeTransaction(const Transaction& tx);
+
+		/*
 			Operator overload for easier printing of the transaction data to the output stream.
 		*/
 		friend extern VOLT_API std::ostream& operator<<(std::ostream& stream, const Transaction& tx);
