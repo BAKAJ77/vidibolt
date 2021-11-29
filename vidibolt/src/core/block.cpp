@@ -36,8 +36,8 @@ namespace Volt
 			block.GetTransactions(), block.GetBlockHash()))
 	{}
 
-	Block::Block(uint32_t index, uint64_t timestamp, const std::string& prevHash, const std::vector<Transaction>& txs,
-		const std::string& blockHash) :
+	Block::Block(uint32_t index, const std::string& prevHash, const std::vector<Transaction>& txs,
+		const std::string& blockHash, uint64_t timestamp) :
 		impl(std::make_unique<Implementation>(index, timestamp, prevHash, txs, blockHash))
 	{}
 

@@ -18,8 +18,8 @@ namespace Volt
 	public:
 		VOLT_API Block();
 		VOLT_API Block(const Block& block);
-		VOLT_API Block(uint32_t index, uint64_t timestamp, const std::string& prevHash, const std::vector<Transaction>& txs,
-			const std::string& blockHash = "");
+		VOLT_API Block(uint32_t index, const std::string& prevHash, const std::vector<Transaction>& txs,
+			const std::string& blockHash = "", uint64_t timestamp = 0);
 
 		VOLT_API ~Block();
 		
