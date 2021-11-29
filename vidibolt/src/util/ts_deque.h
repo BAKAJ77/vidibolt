@@ -2,6 +2,7 @@
 #define VIDIBOLT_THREAD_SAFE_DEQUE_H
 
 #include <util/volt_api.h>
+#include <memory>
 #include <deque>
 #include <mutex>
 
@@ -10,7 +11,7 @@ namespace Volt
 	/*
 		A double ended queue class that wraps the std::deque operations with locks for increased thread safety.
 	*/
-	template<typename T> class VOLT_EXPORT Deque
+	template<typename T> class Deque
 	{
 	private:
 		template<typename U> class Implementation
@@ -85,62 +86,62 @@ namespace Volt
 			}
 		};
 		
-		Implementation<T>* impl;
+		std::shared_ptr<Implementation<T>> impl;
 	public:
-		Deque();
-		Deque(const Deque<T>&) = delete;
+		VOLT_EXPORT Deque();
+		VOLT_EXPORT Deque(const Deque<T>&) = delete;
 
-		~Deque();
+		VOLT_EXPORT ~Deque() = default;
 
 		/*
 			Pushes element to the back of the queue.
 		*/
-		void PushBackElement(const T& data);
+		VOLT_EXPORT void PushBackElement(const T& data);
 
 		/*
 			Pushes element to the front of the queue.
 		*/
-		void PushFrontElement(const T& data);
+		VOLT_EXPORT void PushFrontElement(const T& data);
 
 		/*
 			Clears out the queue of all elements it contains.
 		*/
-		void ClearElements();
+		VOLT_EXPORT void ClearElements();
 
 		/*
 			Pop the element from the front of the queue.
 		*/
-		void PopFrontElement();
+		VOLT_EXPORT void PopFrontElement();
 
 		/*
 			Pop the element from the back of the queue.
 		*/
-		void PopBackElement();
+		VOLT_EXPORT void PopBackElement();
 
 		/*
 			Returns the element at the front of the queue.
 		*/
-		const T& GetFrontElement();
+		VOLT_EXPORT const T& GetFrontElement();
 
 		/*
 			Returns the element at the back of the queue.
 		*/
-		const T& GetBackElement();
+		VOLT_EXPORT const T& GetBackElement();
 
 		/*
 			Returns TRUE if the queue is empty, else if it's not then FALSE is returned.
 		*/
-		bool IsEmpty();
+		VOLT_EXPORT bool IsEmpty();
 
 		/*
 			Returns the size of the queue.
 		*/
-		size_t GetSize();
+		VOLT_EXPORT size_t GetSize();
 
 		/*
 			Operator overload that returns the element at the index specified.
 		*/
-		T& operator[](size_t index);
+		VOLT_EXPORT T& operator[](size_t index);
 	};
 }
 

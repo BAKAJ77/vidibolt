@@ -3,6 +3,7 @@
 
 #include <util/volt_api.h>
 #include <unordered_map>
+#include <memory>
 #include <mutex>
 
 namespace Volt
@@ -10,7 +11,7 @@ namespace Volt
 	/*
 		A unordered map class that wraps the std::unordered_map operations with locks for increased thread safety.
 	*/
-	template <typename Key, typename Ty> class VOLT_EXPORT UnorderedMap
+	template <typename Key, typename Ty> class UnorderedMap
 	{
 	private:
 		template<typename K, typename T> class Implementation
@@ -94,67 +95,67 @@ namespace Volt
 			}
 		};
 
-		Implementation<Key, Ty>* impl;
+		std::shared_ptr<Implementation<Key, Ty>> impl;
 	public:
-		UnorderedMap();
-		UnorderedMap(const UnorderedMap<Key, Ty>&) = delete;
+		VOLT_EXPORT UnorderedMap();
+		VOLT_EXPORT UnorderedMap(const UnorderedMap<Key, Ty>&) = delete;
 
-		~UnorderedMap();
+		VOLT_EXPORT ~UnorderedMap() = default;
 
 		/*
 			Reserves space for at least the specified number of elements and regenerates the hash table.
 		*/
-		void Reserve(size_t count);
+		VOLT_EXPORT void Reserve(size_t count);
 
 		/*
 			Inserts new specified element into the container.
 		*/
-		void Insert(const Key& key, const Ty& data);
+		VOLT_EXPORT void Insert(const Key& key, const Ty& data);
 
 		/*
 			Emplaces the specified element into the container.
 		*/
-		void Emplace(const Key& key, const Ty& data);
+		VOLT_EXPORT void Emplace(const Key& key, const Ty& data);
 
 		/*
 			Removes element, matching the specified key, from the container.
 		*/
-		void Erase(const Key& key);
+		VOLT_EXPORT void Erase(const Key& key);
 
 		/*
 			Clears the container of all existing elements.
 		*/
-		void ClearElements();
+		VOLT_EXPORT void ClearElements();
 
 		/*
 			Returns the value of the element with the matching key specified.
 		*/
-		Ty& GetElement(const Key& key);
+		VOLT_EXPORT Ty& GetElement(const Key& key);
 
 		/*
 			Returns the value of the element at the index position specified.
 		*/
-		Ty& GetElementAtIndex(size_t indexPos);
+		VOLT_EXPORT Ty& GetElementAtIndex(size_t indexPos);
 
 		/*
 			Returns TRUE if an element with the matchig key specified is found, else FALSE is returned.
 		*/
-		bool ElementExists(const Key& key);
+		VOLT_EXPORT bool ElementExists(const Key& key);
 
 		/*
 			Returns the amount of elements in the container.
 		*/
-		size_t GetSize();
+		VOLT_EXPORT size_t GetSize();
 
 		/*
 			Returns TRUE if container is empty, else FALSE is returned.
 		*/
-		bool IsEmpty();
+		VOLT_EXPORT bool IsEmpty();
 
 		/*
 			Operator overload that returns the element that has a key matching the one specified.
 		*/
-		Ty& operator[](const Key& key);
+		VOLT_EXPORT Ty& operator[](const Key& key);
 	};
 }
 

@@ -16,46 +16,46 @@ namespace Volt
 	/*
 		Handles transmission of data between two endpoints.
 	*/
-	class VOLT_API Connection
+	class Connection
 	{
 	private:
 		class Implementation;
-		Implementation* impl;
+		std::shared_ptr<Implementation> impl;
 	public:
-		Connection(Deque<RecievedMessage>& msgsIn);
-		~Connection();
+		VOLT_API Connection(Deque<RecievedMessage>& msgsIn);
+		VOLT_API ~Connection() = default;
 
 		/*
 			Pushes message to pending queue. Messages in the queue are transmitted once 'FlushSocket()' is called.
 		*/
-		void PushOutboundMessage(const Message& msg);
+		VOLT_API void PushOutboundMessage(const Message& msg);
 
 		/*
 			Closes the socket which the connection is established through.
 		*/
-		void CloseSocket();
+		VOLT_API void CloseSocket();
 
 		/*
 			Transmits all pending outbound messages and recieves all pending inbound messages.
 			ErrorID::NONE is returned if no error occurs, else an specific error enum value will be returned based
 			on the error that occurred;
 		*/
-		ErrorID FlushSocket();
+		VOLT_API ErrorID FlushSocket();
 
 		/*
 			Returns the socket which the connection is established through.
 		*/
-		asio::ip::tcp::socket& GetSocketObject();
+		VOLT_API asio::ip::tcp::socket& GetSocketObject();
 
 		/*
 			Returns TRUE if the socket is open, else FALSE is returned.
 		*/
-		bool IsSocketOpen() const;
+		VOLT_API bool IsSocketOpen() const;
 
 		/*
 			Returns the ID assigned to the connection object.
 		*/
-		const uint32_t& GetID() const;
+		VOLT_API const uint32_t& GetID() const;
 	};
 
 	typedef std::shared_ptr<Connection> ConnectionPtr;

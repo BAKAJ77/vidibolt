@@ -84,13 +84,8 @@ namespace Volt
 	};
 
 	TCPClient::TCPClient(uint32_t port) :
-		impl(new Implementation(port))
+		impl(std::make_shared<Implementation>(port))
 	{}
-
-	TCPClient::~TCPClient() 
-	{ 
-		delete this->impl;
-	}
 
 	ErrorID TCPClient::Connect(const std::string& address)
 	{

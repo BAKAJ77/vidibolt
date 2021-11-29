@@ -3,13 +3,8 @@
 namespace Volt
 {
 	template <typename Key, typename Ty> UnorderedMap<Key, Ty>::UnorderedMap() :
-		impl(new Implementation<Key, Ty>)
+		impl(std::make_shared<Implementation<Key, Ty>>())
 	{}
-
-	template <typename Key, typename Ty> UnorderedMap<Key, Ty>::~UnorderedMap()
-	{
-		delete this->impl;
-	}
 
 	template <typename Key, typename Ty> void UnorderedMap<Key, Ty>::Reserve(size_t count)
 	{

@@ -7,50 +7,51 @@
 #include <net/message.h>
 
 #include <string>
+#include <memory>
 
 namespace Volt
 {
 	/*
 		Handles client side operations for outbound connections.
 	*/
-	class VOLT_API TCPClient
+	class TCPClient
 	{
 	private:
 		class Implementation;
-		Implementation* impl;
+		std::shared_ptr<Implementation> impl;
 	public:
-		TCPClient(uint32_t port);
-		~TCPClient();
+		VOLT_API TCPClient(uint32_t port);
+		VOLT_API ~TCPClient() = default;
 
 		/*
 			Connects to server-side of peer with the ipv4 address specified.
 		*/
-		ErrorID Connect(const std::string& address);
+		VOLT_API ErrorID Connect(const std::string& address);
 
 		/*
 			Closes the currently open connection.
 		*/
-		void Disconnect();
+		VOLT_API void Disconnect();
 
 		/*
 			Pushes message data into pending queue in order to be transmitted.
 		*/
-		void PushOutboundMessage(const Message& msg);
+		VOLT_API void PushOutboundMessage(const Message& msg);
 
 		/*
 			Transmits all pending messages and recieves all pending incoming messages.
 		*/
-		ErrorID UpdateState();
+		VOLT_API ErrorID UpdateState();
 
 		/*
 			Returns a queue of recieved messages.
 		*/
-		Deque<RecievedMessage>& GetInboundMessages();
+		VOLT_API Deque<RecievedMessage>& GetInboundMessages();
 
 		/*
 			Returns the port number that connections are being opened on by the client.
 		*/
-		const uint32_t& GetPort() const;
+		VOLT_API const uint32_t& GetPort() const;
 	};
 }
 

@@ -62,13 +62,8 @@ namespace Volt
 	};
 
 	Node::Node(uint32_t port) :
-		impl(new Implementation(port))
+		impl(std::make_shared<Implementation>(port))
 	{}
-
-	Node::~Node() 
-	{
-		delete this->impl;
-	}
 
 	TCPClient& Node::GetClient()
 	{

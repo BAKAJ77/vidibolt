@@ -3,13 +3,8 @@
 namespace Volt
 {
 	template <typename T> Deque<T>::Deque() :
-		impl(new Implementation<T>)
+		impl(std::make_shared<Implementation<T>>())
 	{}
-
-	template <typename T> Deque<T>::~Deque()
-	{
-		delete this->impl;
-	}
 
 	template <typename T> void Deque<T>::PushBackElement(const T& data)
 	{

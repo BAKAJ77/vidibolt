@@ -137,13 +137,8 @@ namespace Volt
 	};
 
 	TCPServer::TCPServer(uint32_t port, bool startListener) :
-		impl(new Implementation(port, startListener))
+		impl(std::make_shared<Implementation>(port, startListener))
 	{}
-
-	TCPServer::~TCPServer() 
-	{
-		delete this->impl;
-	}
 
 	void TCPServer::StartListener()
 	{

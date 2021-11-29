@@ -7,6 +7,7 @@
 
 #include <boost/json.hpp>
 #include <string>
+#include <memory>
 
 using namespace boost;
 
@@ -15,16 +16,17 @@ namespace Volt
 	/*
 		A class that contains the data of a transaction.
 	*/
-	class VOLT_API Transaction
+	class Transaction
 	{
 	private:
 		class Implementation;
-		Implementation* impl;
+		std::shared_ptr<Implementation> impl;
 	public:
-		Transaction();
-		Transaction(uint64_t id, uint64_t amount, uint64_t timestamp, const std::string& senderPK,
+		VOLT_API Transaction();
+		VOLT_API Transaction(uint64_t id, uint64_t amount, uint64_t timestamp, const std::string& senderPK,
 			const std::string& recipientPK, const std::string& signiture = "");
-		~Transaction();
+
+		VOLT_API ~Transaction() = default;
 
 		/*
 			Signs the transaction with the private key given.
@@ -56,32 +58,32 @@ namespace Volt
 		/*
 			Returns the ID of the transaction.
 		*/
-		const uint64_t& GetID() const;
+		VOLT_API const uint64_t& GetID() const;
 
 		/*
 			Returns the amount tranferred in the transaction.
 		*/
-		const uint64_t& GetAmount() const;
+		VOLT_API const uint64_t& GetAmount() const;
 
 		/*
 			Returns the timestamp of the transaction.
 		*/
-		const uint64_t& GetTimestamp() const;
+		VOLT_API const uint64_t& GetTimestamp() const;
 
 		/*
 			Returns the public key of the sender in the transaction.
 		*/
-		const std::string& GetSenderKey() const;
+		VOLT_API const std::string& GetSenderKey() const;
 
 		/*
 			Returns the public key of the recipient in the transaction.
 		*/
-		const std::string& GetRecipientKey() const;
+		VOLT_API const std::string& GetRecipientKey() const;
 
 		/*
 			Returns the signiture of the transaction.
 		*/
-		const std::string& GetSigniture() const;
+		VOLT_API const std::string& GetSigniture() const;
 	};
 }
 

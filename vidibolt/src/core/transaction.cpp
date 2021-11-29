@@ -27,18 +27,13 @@ namespace Volt
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	Transaction::Transaction() :
-		impl(new Implementation)
+		impl(std::make_shared<Implementation>())
 	{}
 
 	Transaction::Transaction(uint64_t id, uint64_t amount, uint64_t timestamp, const std::string& senderPK, 
 		const std::string& recipientPK, const std::string& signiture) :
-		impl(new Implementation(id, amount, timestamp, senderPK, recipientPK, signiture))
+		impl(std::make_shared<Implementation>(id, amount, timestamp, senderPK, recipientPK, signiture))
 	{}
-
-	Transaction::~Transaction()
-	{
-		delete this->impl;
-	}
 
 	const uint64_t& Transaction::GetID() const
 	{
