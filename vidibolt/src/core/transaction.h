@@ -1,5 +1,5 @@
-#ifndef VIDIBOLT_TRANSACTION_H
-#define VIDIBOLT_TRANSACTION_H
+#ifndef VIDIBOLT_CORE_TRANSACTION_H
+#define VIDIBOLT_CORE_TRANSACTION_H
 
 #include <util/volt_api.h>
 #include <util/error_identifier.h>
