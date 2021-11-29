@@ -96,6 +96,8 @@ namespace Volt
 		*/
 		VOLT_API const std::string& GetSigniture() const;
 	};
+
+	extern VOLT_API bool operator==(const Transaction& lhs, const Transaction& rhs);
 }
 
 #endif

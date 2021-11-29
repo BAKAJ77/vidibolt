@@ -151,5 +151,15 @@ namespace Volt
 		return stream;
 	}
 
+	bool operator==(const Transaction& lhs, const Transaction& rhs)
+	{
+		return lhs.GetID() == rhs.GetID() &&
+			lhs.GetAmount() == rhs.GetAmount() &&
+			lhs.GetTimestamp() == rhs.GetTimestamp() &&
+			lhs.GetSenderKey() == rhs.GetSenderKey() &&
+			lhs.GetRecipientKey() == rhs.GetRecipientKey() &&
+			lhs.GetSigniture() == rhs.GetSigniture();
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
