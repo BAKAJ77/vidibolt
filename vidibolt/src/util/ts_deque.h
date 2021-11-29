@@ -86,12 +86,14 @@ namespace Volt
 			}
 		};
 		
-		std::shared_ptr<Implementation<T>> impl;
+		std::unique_ptr<Implementation<T>> impl;
 	public:
 		VOLT_EXPORT Deque();
-		VOLT_EXPORT Deque(const Deque<T>&) = delete;
+		VOLT_EXPORT Deque(const Deque<T>& other) = delete;
 
 		VOLT_EXPORT ~Deque() = default;
+
+		VOLT_EXPORT void operator=(const Deque<T>& other) = delete;
 
 		/*
 			Pushes element to the back of the queue.

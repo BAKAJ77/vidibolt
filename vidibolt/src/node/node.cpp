@@ -62,8 +62,10 @@ namespace Volt
 	};
 
 	Node::Node(uint32_t port) :
-		impl(std::make_shared<Implementation>(port))
+		impl(std::make_unique<Implementation>(port))
 	{}
+
+	Node::~Node() = default;
 
 	TCPClient& Node::GetClient()
 	{

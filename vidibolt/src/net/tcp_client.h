@@ -18,10 +18,14 @@ namespace Volt
 	{
 	private:
 		class Implementation;
-		std::shared_ptr<Implementation> impl;
+		std::unique_ptr<Implementation> impl;
 	public:
 		VOLT_API TCPClient(uint32_t port);
-		VOLT_API ~TCPClient() = default;
+		VOLT_API TCPClient(const TCPClient& client) = delete;
+
+		VOLT_API ~TCPClient();
+
+		VOLT_API void operator=(const TCPClient& client) = delete;
 
 		/*
 			Connects to server-side of peer with the ipv4 address specified.

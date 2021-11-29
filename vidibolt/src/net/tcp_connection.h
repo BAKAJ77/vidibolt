@@ -20,10 +20,14 @@ namespace Volt
 	{
 	private:
 		class Implementation;
-		std::shared_ptr<Implementation> impl;
+		std::unique_ptr<Implementation> impl;
 	public:
 		VOLT_API Connection(Deque<RecievedMessage>& msgsIn);
-		VOLT_API ~Connection() = default;
+		VOLT_API Connection(const Connection& connection) = delete;
+
+		VOLT_API ~Connection();
+		
+		VOLT_API void operator=(const Connection& connection) = delete;
 
 		/*
 			Pushes message to pending queue. Messages in the queue are transmitted once 'FlushSocket()' is called.

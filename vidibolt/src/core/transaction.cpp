@@ -27,13 +27,26 @@ namespace Volt
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	Transaction::Transaction() :
-		impl(std::make_shared<Implementation>())
+		impl(std::make_unique<Implementation>())
+	{}
+
+	Transaction::Transaction(const Transaction& tx) :
+		impl(std::make_unique<Implementation>(tx.GetID(), tx.GetAmount(), tx.GetTimestamp(), tx.GetSenderKey(),
+			tx.GetRecipientKey(), tx.GetSigniture()))
 	{}
 
 	Transaction::Transaction(uint64_t id, uint64_t amount, uint64_t timestamp, const std::string& senderPK, 
 		const std::string& recipientPK, const std::string& signiture) :
-		impl(std::make_shared<Implementation>(id, amount, timestamp, senderPK, recipientPK, signiture))
+		impl(std::make_unique<Implementation>(id, amount, timestamp, senderPK, recipientPK, signiture))
 	{}
+
+	Transaction::~Transaction() = default;
+
+	void Transaction::operator=(const Transaction& tx)
+	{
+		this->impl = std::make_unique<Implementation>(tx.GetID(), tx.GetAmount(), tx.GetTimestamp(), tx.GetSenderKey(),
+			tx.GetRecipientKey(), tx.GetSigniture());
+	}
 
 	const uint64_t& Transaction::GetID() const
 	{

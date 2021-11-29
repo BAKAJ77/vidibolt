@@ -20,13 +20,19 @@ namespace Volt
 	{
 	private:
 		class Implementation;
-		std::shared_ptr<Implementation> impl;
+		std::unique_ptr<Implementation> impl;
 	public:
 		VOLT_API Transaction();
+		VOLT_API Transaction(const Transaction& tx);
 		VOLT_API Transaction(uint64_t id, uint64_t amount, uint64_t timestamp, const std::string& senderPK,
 			const std::string& recipientPK, const std::string& signiture = "");
 
-		VOLT_API ~Transaction() = default;
+		VOLT_API ~Transaction();
+
+		/*
+			Operator overload for assignment operations.
+		*/
+		VOLT_API void operator=(const Transaction& tx);
 
 		/*
 			Signs the transaction with the private key given.

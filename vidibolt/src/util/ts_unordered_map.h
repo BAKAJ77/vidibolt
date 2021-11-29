@@ -95,12 +95,14 @@ namespace Volt
 			}
 		};
 
-		std::shared_ptr<Implementation<Key, Ty>> impl;
+		std::unique_ptr<Implementation<Key, Ty>> impl;
 	public:
 		VOLT_EXPORT UnorderedMap();
-		VOLT_EXPORT UnorderedMap(const UnorderedMap<Key, Ty>&) = delete;
+		VOLT_EXPORT UnorderedMap(const UnorderedMap<Key, Ty>& other) = delete;
 
 		VOLT_EXPORT ~UnorderedMap() = default;
+
+		VOLT_EXPORT void operator=(const UnorderedMap<Key, Ty>& other) = delete;
 
 		/*
 			Reserves space for at least the specified number of elements and regenerates the hash table.

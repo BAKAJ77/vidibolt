@@ -17,10 +17,14 @@ namespace Volt
 	{
 	private:
 		class Implementation;
-		std::shared_ptr<Implementation> impl;
+		std::unique_ptr<Implementation> impl;
 	public:
 		VOLT_API TCPServer(uint32_t port, bool startListener = true);
-		VOLT_API ~TCPServer() = default;
+		VOLT_API TCPServer(const TCPServer& server) = delete;
+
+		VOLT_API ~TCPServer();
+
+		VOLT_API void operator=(const TCPServer& server) = delete;
 
 		/*
 			Starts up operation for listening for new inbound connections.

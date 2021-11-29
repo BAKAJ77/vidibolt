@@ -165,8 +165,10 @@ namespace Volt
 	};
 
 	Connection::Connection(Deque<RecievedMessage>& msgsIn) :
-		impl(std::make_shared<Implementation>(msgsIn))
+		impl(std::make_unique<Implementation>(msgsIn))
 	{}
+
+	Connection::~Connection() = default;
 
 	void Connection::PushOutboundMessage(const Message& msg) 
 	{

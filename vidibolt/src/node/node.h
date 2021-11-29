@@ -16,10 +16,14 @@ namespace Volt
 	{
 	private:
 		class Implementation;
-		std::shared_ptr<Implementation> impl;
+		std::unique_ptr<Implementation> impl;
 	public:
 		VOLT_API Node(uint32_t port = 60000);
-		VOLT_API ~Node() = default;
+		VOLT_API Node(const Node& node) = delete;
+
+		VOLT_API ~Node();
+
+		VOLT_API void operator=(const Node& node) = delete;
 
 		/* TEMPORARY FUNCTIONS */
 		VOLT_API TCPClient& GetClient();
