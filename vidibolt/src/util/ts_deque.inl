@@ -6,6 +6,15 @@ namespace Volt
 		impl(std::make_unique<Implementation<T>>())
 	{}
 
+	template <typename T> Deque<T>::Deque(const Deque<T>& other) :
+		impl(std::make_unique<Implementation<T>>(*other.impl))
+	{}
+
+	template <typename T> void Deque<T>::operator=(const Deque<T>& other)
+	{
+		this->impl = std::make_unique<Implementation<T>>(*other.impl);
+	}
+
 	template <typename T> void Deque<T>::PushBackElement(const T& data)
 	{
 		this->impl->PushBackElement(data);
@@ -31,22 +40,22 @@ namespace Volt
 		this->impl->PopBackElement();
 	}
 
-	template <typename T> const T& Deque<T>::GetFrontElement()
+	template <typename T> const T& Deque<T>::GetFrontElement() const
 	{
 		return this->impl->GetFrontElement();
 	}
 
-	template <typename T> const T& Deque<T>::GetBackElement()
+	template <typename T> const T& Deque<T>::GetBackElement() const
 	{
 		return this->impl->GetBackElement();
 	}
 
-	template <typename T> bool Deque<T>::IsEmpty()
+	template <typename T> bool Deque<T>::IsEmpty() const
 	{
 		return this->impl->IsEmpty();
 	}
 
-	template <typename T> size_t Deque<T>::GetSize()
+	template <typename T> size_t Deque<T>::GetSize() const
 	{
 		return this->impl->GetSize();
 	}
@@ -54,5 +63,15 @@ namespace Volt
 	template <typename T> T& Deque<T>::operator[](size_t index)
 	{
 		return (*this->impl)[index];
+	}
+
+	template <typename T> const T& Deque<T>::operator[](size_t index) const
+	{
+		return (*this->impl)[index];
+	}
+
+	template<typename T> Deque<T>::operator std::vector<T>() const
+	{
+		return std::vector<T>({ this->impl->GetDequeObject().begin(), this->impl->GetDequeObject().end() });
 	}
 }

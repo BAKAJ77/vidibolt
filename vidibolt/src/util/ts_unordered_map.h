@@ -18,12 +18,19 @@ namespace Volt
 		{
 		private:
 			std::unordered_map<K, T> map;
-			std::mutex mutex;
+			mutable std::mutex mutex;
 		public:
 			Implementation() = default;
-			Implementation(const Implementation<K, T>&) = delete;
+			Implementation(const Implementation<K, T>& other) :
+				map(other.map)
+			{}
 
 			~Implementation() = default;
+
+			void operator=(const Implementation<K, T>& other)
+			{
+				this->map = other.map;
+			}
 
 			void Reserve(size_t count)
 			{
@@ -61,6 +68,12 @@ namespace Volt
 				return this->map.at(key);
 			}
 
+			const T& GetElement(const K& key) const
+			{
+				std::scoped_lock lock(this->mutex);
+				return this->map.at(key);
+			}
+
 			T& GetElementAtIndex(size_t indexPos)
 			{
 				std::scoped_lock lock(this->mutex);
@@ -70,19 +83,28 @@ namespace Volt
 				return it->second;
 			}
 
-			bool ElementExists(const K& key)
+			const T& GetElementAtIndex(size_t indexPos) const
+			{
+				std::scoped_lock lock(this->mutex);
+				auto it = this->map.begin();
+				std::advance(it, indexPos);
+
+				return it->second;
+			}
+
+			bool ElementExists(const K& key) const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->map.find(key) != this->map.end() ? true : false;
 			}
 
-			size_t GetSize()
+			size_t GetSize() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->map.size();
 			}
 
-			bool IsEmpty()
+			bool IsEmpty() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->map.empty();
@@ -93,16 +115,22 @@ namespace Volt
 				std::scoped_lock lock(this->mutex);
 				return this->map[key];
 			}
+
+			const T& operator[](const K& key) const
+			{
+				std::scoped_lock lock(this->mutex);
+				return this->map[key];
+			}
 		};
 
 		std::unique_ptr<Implementation<Key, Ty>> impl;
 	public:
 		VOLT_EXPORT UnorderedMap();
-		VOLT_EXPORT UnorderedMap(const UnorderedMap<Key, Ty>& other) = delete;
+		VOLT_EXPORT UnorderedMap(const UnorderedMap<Key, Ty>& other);
 
 		VOLT_EXPORT ~UnorderedMap() = default;
 
-		VOLT_EXPORT void operator=(const UnorderedMap<Key, Ty>& other) = delete;
+		VOLT_EXPORT void operator=(const UnorderedMap<Key, Ty>& other);
 
 		/*
 			Reserves space for at least the specified number of elements and regenerates the hash table.
@@ -135,29 +163,44 @@ namespace Volt
 		VOLT_EXPORT Ty& GetElement(const Key& key);
 
 		/*
+			Returns the value of the element with the matching key specified.
+		*/
+		VOLT_EXPORT const Ty& GetElement(const Key& key) const;
+
+		/*
 			Returns the value of the element at the index position specified.
 		*/
 		VOLT_EXPORT Ty& GetElementAtIndex(size_t indexPos);
 
 		/*
+			Returns the value of the element at the index position specified.
+		*/
+		VOLT_EXPORT const Ty& GetElementAtIndex(size_t indexPos) const;
+
+		/*
 			Returns TRUE if an element with the matchig key specified is found, else FALSE is returned.
 		*/
-		VOLT_EXPORT bool ElementExists(const Key& key);
+		VOLT_EXPORT bool ElementExists(const Key& key) const;
 
 		/*
 			Returns the amount of elements in the container.
 		*/
-		VOLT_EXPORT size_t GetSize();
+		VOLT_EXPORT size_t GetSize() const;
 
 		/*
 			Returns TRUE if container is empty, else FALSE is returned.
 		*/
-		VOLT_EXPORT bool IsEmpty();
+		VOLT_EXPORT bool IsEmpty() const;
 
 		/*
 			Operator overload that returns the element that has a key matching the one specified.
 		*/
 		VOLT_EXPORT Ty& operator[](const Key& key);
+
+		/*
+			Operator overload that returns the element that has a key matching the one specified.
+		*/
+		VOLT_EXPORT const Ty& operator[](const Key& key) const;
 	};
 }
 

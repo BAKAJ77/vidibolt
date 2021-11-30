@@ -2,7 +2,9 @@
 #define VIDIBOLT_THREAD_SAFE_DEQUE_H
 
 #include <util/volt_api.h>
+
 #include <memory>
+#include <vector>
 #include <deque>
 #include <mutex>
 
@@ -18,12 +20,19 @@ namespace Volt
 		{
 		private:
 			std::deque<U> deque;
-			std::mutex mutex;
+			mutable std::mutex mutex;
 		public:
 			Implementation() = default;
-			Implementation(const Implementation<U>&) = delete;
+			Implementation(const Implementation<U>& other) :
+				deque(other.deque)
+			{}
 
 			~Implementation() = default;
+
+			void operator=(const Implementation<U>& other)
+			{
+				this->deque = other.deque;
+			}
 
 			void PushBackElement(const U& data)
 			{
@@ -55,25 +64,25 @@ namespace Volt
 				this->deque.pop_back();
 			}
 
-			const U& GetFrontElement()
+			const U& GetFrontElement() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->deque.front();
 			}
 
-			const U& GetBackElement()
+			const U& GetBackElement() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->deque.back();
 			}
 
-			bool IsEmpty()
+			bool IsEmpty() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->deque.empty();
 			}
 
-			size_t GetSize()
+			size_t GetSize() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->deque.size();
@@ -84,16 +93,28 @@ namespace Volt
 				std::scoped_lock lock(this->mutex);
 				return this->deque[index];
 			}
+
+			const U& operator[](size_t index) const
+			{
+				std::scoped_lock lock(this->mutex);
+				return this->deque[index];
+			}
+
+			const std::deque<U>& GetDequeObject() const
+			{
+				std::scoped_lock lock(this->mutex);
+				return this->deque;
+			}
 		};
 		
 		std::unique_ptr<Implementation<T>> impl;
 	public:
 		VOLT_EXPORT Deque();
-		VOLT_EXPORT Deque(const Deque<T>& other) = delete;
+		VOLT_EXPORT Deque(const Deque<T>& other);
 
 		VOLT_EXPORT ~Deque() = default;
 
-		VOLT_EXPORT void operator=(const Deque<T>& other) = delete;
+		VOLT_EXPORT void operator=(const Deque<T>& other);
 
 		/*
 			Pushes element to the back of the queue.
@@ -123,27 +144,37 @@ namespace Volt
 		/*
 			Returns the element at the front of the queue.
 		*/
-		VOLT_EXPORT const T& GetFrontElement();
+		VOLT_EXPORT const T& GetFrontElement() const;
 
 		/*
 			Returns the element at the back of the queue.
 		*/
-		VOLT_EXPORT const T& GetBackElement();
+		VOLT_EXPORT const T& GetBackElement() const;
 
 		/*
 			Returns TRUE if the queue is empty, else if it's not then FALSE is returned.
 		*/
-		VOLT_EXPORT bool IsEmpty();
+		VOLT_EXPORT bool IsEmpty() const;
 
 		/*
 			Returns the size of the queue.
 		*/
-		VOLT_EXPORT size_t GetSize();
+		VOLT_EXPORT size_t GetSize() const;
 
 		/*
 			Operator overload that returns the element at the index specified.
 		*/
 		VOLT_EXPORT T& operator[](size_t index);
+
+		/*
+			Operator overload that returns the element at the index specified.
+		*/
+		VOLT_EXPORT const T& operator[](size_t index) const;
+
+		/*
+			Operator overload for casting a deque to a vector of the same type.
+		*/
+		VOLT_EXPORT operator std::vector<T>() const;
 	};
 }
 
