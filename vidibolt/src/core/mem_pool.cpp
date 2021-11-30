@@ -20,8 +20,8 @@ namespace Volt
 		impl(std::make_unique<Implementation>())
 	{}
 
-	MemPool::MemPool(const MemPool& other) :
-		impl(std::make_unique<Implementation>(other.impl->pendingTxs))
+	MemPool::MemPool(const MemPool& pool) :
+		impl(std::make_unique<Implementation>(pool.impl->pendingTxs))
 	{}
 
 	MemPool::MemPool(const Deque<Transaction>& pendingTxs) :
@@ -30,9 +30,9 @@ namespace Volt
 
 	MemPool::~MemPool() = default;
 
-	void MemPool::operator=(const MemPool& other)
+	void MemPool::operator=(const MemPool& pool)
 	{
-		this->impl = std::make_unique<Implementation>(other.impl->pendingTxs);
+		this->impl = std::make_unique<Implementation>(pool.impl->pendingTxs);
 	}
 
 	ErrorID PushTransaction(MemPool& pool, const Transaction& tx)

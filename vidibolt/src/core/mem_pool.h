@@ -17,12 +17,15 @@ namespace Volt
 		std::unique_ptr<Implementation> impl;
 	public:
 		VOLT_API MemPool();
-		VOLT_API MemPool(const MemPool& other);
+		VOLT_API MemPool(const MemPool& pool);
 		VOLT_API MemPool(const Deque<Transaction>& pendingTxs);
 
 		VOLT_API ~MemPool();
 
-		VOLT_API void operator=(const MemPool& other);
+		/*
+			Operator overload for assignment operations.
+		*/
+		VOLT_API void operator=(const MemPool& pool);
 
 		/*
 			Pushes given transaction into the mempool.
