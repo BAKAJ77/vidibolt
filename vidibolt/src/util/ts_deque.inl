@@ -69,9 +69,4 @@ namespace Volt
 	{
 		return (*this->impl)[index];
 	}
-
-	template<typename T> Deque<T>::operator std::vector<T>() const
-	{
-		return std::vector<T>({ this->impl->GetDequeObject().begin(), this->impl->GetDequeObject().end() });
-	}
 }

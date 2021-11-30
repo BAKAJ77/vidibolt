@@ -170,11 +170,6 @@ namespace Volt
 			Operator overload that returns the element at the index specified.
 		*/
 		VOLT_EXPORT const T& operator[](size_t index) const;
-
-		/*
-			Operator overload for casting a deque to a vector of the same type.
-		*/
-		VOLT_EXPORT operator std::vector<T>() const;
 	};
 }
 
