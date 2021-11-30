@@ -10,6 +10,9 @@
 
 namespace Volt
 {
+	/*
+		A class for containing pending transactions.
+	*/
 	class MemPool
 	{
 	private:

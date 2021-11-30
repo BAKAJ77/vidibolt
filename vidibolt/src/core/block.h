@@ -10,6 +10,9 @@
 
 namespace Volt
 {
+	/*
+		A class that contains data belonging to a block.
+	*/
 	class Block
 	{
 	private:
