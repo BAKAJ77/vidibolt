@@ -33,13 +33,13 @@ project "vidibolt"
     -- Project settings with values unique to the Debug/Release configurations
     filter "configurations:Debug"
         targetname "libvolt-dbg"
-        libdirs { "bin/openssl/debug" }
+        libdirs { "bin/openssl/debug", "bin/boost" }
         defines { "_DEBUG" }
         symbols "On"
 
     filter "configurations:Release"
         targetname "libvolt"
-        libdirs { "bin/openssl/release" }
+        libdirs { "bin/openssl/release", "bin/boost" }
         defines { "NDEBUG" }
         optimize "Speed"
 
@@ -58,10 +58,10 @@ project "blockchain_test"
     targetdir "%{prj.location}/bin/%{cfg.buildcfg}-%{cfg.architecture}/"
     objdir "%{prj.location}/objs/%{cfg.buildcfg}-%{cfg.architecture}/%{prj.name}"
 
-    includedirs { "%{prj.location}/src", "vidibolt/src" }
+    includedirs { "%{prj.location}/src", "vidibolt/src", "libs/boost" }
     files { "%{prj.location}/src/%{prj.name}.cpp" }
 
-    libdirs { "bin/vidibolt" }
+    libdirs { "bin/vidibolt", "bin/boost" }
 
     -- Project platform define macro based on identified system
     filter "system:windows"
@@ -116,10 +116,10 @@ project "sha256_test"
     targetdir "%{prj.location}/bin/%{cfg.buildcfg}-%{cfg.architecture}/"
     objdir "%{prj.location}/objs/%{cfg.buildcfg}-%{cfg.architecture}/%{prj.name}"
 
-    includedirs { "%{prj.location}/src", "vidibolt/src" }
+    includedirs { "%{prj.location}/src", "vidibolt/src", "libs/boost" }
     files { "%{prj.location}/src/%{prj.name}.cpp" }
 
-    libdirs { "bin/vidibolt" }
+    libdirs { "bin/vidibolt", "bin/boost" }
 
     -- Project platform define macro based on identified system
     filter "system:windows"
@@ -177,7 +177,7 @@ project "networking_test"
     includedirs { "%{prj.location}/src", "vidibolt/src", "libs/boost" }
     files { "%{prj.location}/src/%{prj.name}.cpp" }
 
-    libdirs { "bin/vidibolt" }
+    libdirs { "bin/vidibolt", "bin/boost" }
 
     -- Project platform define macro based on identified system
     filter "system:windows"

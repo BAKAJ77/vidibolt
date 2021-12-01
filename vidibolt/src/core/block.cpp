@@ -148,7 +148,7 @@ namespace Volt
 
 	Block GetGenesisBlock()
 	{
-		return Block(0, "", {}, "238862aa5024ec554942e5d009e84d0ae3586d96f81e1190faa69c67b559486c", 1638318078);
+		return Block(0, "", {}, "238862AA5024EC554942E5D009E84D0AE3586D96F81E1190FAA69C67B559486C", 1638318078);
 	}
 
 	bool operator==(const Block& lhs, const Block& rhs)

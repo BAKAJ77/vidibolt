@@ -6,8 +6,7 @@
 int main(int argc, char** argv)
 {
 	// Generate the EC key
-	VOLT::ECKeyPair keyPair("0368bb1821f006fd796b4765a91ff9cbcc0395927a175f0a493c5e23e488aefc38", 
-		"6e3a8c4a4fbca18dfe35d9cc1ad257b50df647aa0334357c3a56d5241ee474d5");
+	Volt::ECKeyPair keyPair;
 
 	std::cout << keyPair.GetPublicKeyHex() << std::endl;
 	std::cout << keyPair.GetPrivateKeyHex() << std::endl;
@@ -19,14 +18,18 @@ int main(int argc, char** argv)
 	{
 		std::string x = "Hello", y = "World", z = "Wow!", w =  " What a good day!";
 
-		auto message = VOLT::GetRawString(x + y + z + w);
-		auto signiture = VOLT::GetSignedSHA256Digest(message, keyPair);
-		auto signitureHex = VOLT::ConvertByteToHexData(signiture);
+		auto message = Volt::GetRawString(x + y + z + w);
+		std::vector<uint8_t> signiture;
+		Volt::GetSignedSHA256Digest(message, keyPair, signiture);
+		auto signitureHex = Volt::ConvertByteToHexData(signiture);
 
 		std::cout << signitureHex << std::endl;
 
-		signiture = VOLT::ConvertHexToByteData(signitureHex);
-		std::cout << VOLT::VerifySHA256Digest(message, signiture, keyPair) << std::endl;
+		signiture = Volt::ConvertHexToByteData(signitureHex);
+		int valid = 0;
+
+		Volt::ErrorCode verifyError = Volt::VerifySHA256Digest(message, keyPair, signiture);
+		std::cout << (verifyError ? "false" : "true") << std::endl;
 	}
 
 	std::cin.get();
