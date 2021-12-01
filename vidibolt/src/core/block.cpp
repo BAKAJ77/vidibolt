@@ -1,6 +1,9 @@
 #include <core/block.h>
-#include <crypto/sha256.h>
+#include <core/mem_pool.h>
 #include <core/chain.h>
+#include <crypto/sha256.h>
+#include <util/random_generation.h>
+#include <util/timestamp.h>
 
 namespace Volt
 {
@@ -10,17 +13,18 @@ namespace Volt
 	{
 	public:
 		uint32_t index;
-		uint64_t timestamp, nonce;
+		uint64_t timestamp, difficulty, nonce;
 		std::string previousHash, hash;
 		std::vector<Transaction> txs;
 	public:
 		Implementation() :
-			index(0), timestamp(0), nonce(0)
+			index(0), timestamp(0), nonce(0), difficulty(0)
 		{}
 
 		Implementation(uint32_t index, uint64_t timestamp, const std::string& prevHash, const std::vector<Transaction>& txs,
-			const std::string& blockHash) :
-			index(index), timestamp(timestamp), previousHash(prevHash), txs(txs), hash(blockHash), nonce(0)
+			const std::string& blockHash, uint64_t difficulty, uint64_t nonce) :
+			index(index), timestamp(timestamp), previousHash(prevHash), txs(txs), hash(blockHash), nonce(nonce), 
+			difficulty(difficulty)
 		{}
 
 		~Implementation() = default;
@@ -34,12 +38,12 @@ namespace Volt
 
 	Block::Block(const Block& block) :
 		impl(std::make_unique<Implementation>(block.GetIndex(), block.GetTimestamp(), block.GetPreviousBlockHash(),
-			block.GetTransactions(), block.GetBlockHash()))
+			block.GetTransactions(), block.GetBlockHash(), block.GetDifficulty(), block.GetNonce()))
 	{}
 
-	Block::Block(uint32_t index, const std::string& prevHash, const std::vector<Transaction>& txs,
-		const std::string& blockHash, uint64_t timestamp) :
-		impl(std::make_unique<Implementation>(index, timestamp, prevHash, txs, blockHash))
+	Block::Block(uint32_t index, const std::string& prevHash, const std::vector<Transaction>& txs, uint64_t difficulty,
+		const std::string& blockHash, uint64_t timestamp, uint64_t nonce) :
+		impl(std::make_unique<Implementation>(index, timestamp, prevHash, txs, blockHash, difficulty, nonce))
 	{}
 
 	Block::~Block() = default;
@@ -47,7 +51,7 @@ namespace Volt
 	void Block::operator=(const Block& block)
 	{
 		this->impl = std::make_unique<Implementation>(block.GetIndex(), block.GetTimestamp(), block.GetPreviousBlockHash(),
-			block.GetTransactions(), block.GetBlockHash());
+			block.GetTransactions(), block.GetBlockHash(), block.GetDifficulty(), block.GetNonce());
 	}
 
 	ErrorCode Block::GenerateBlockHash(std::string& outputBlockHash) const
@@ -58,8 +62,8 @@ namespace Volt
 			combinedTxsData += Volt::SerializeTransaction(tx);
 
 		// Combine all block data into one string, then convert string data into byte vector array
-		const std::string blockData = std::to_string(this->impl->index) + std::to_string(this->impl->timestamp) +
-			std::to_string(this->impl->nonce) + this->impl->previousHash + combinedTxsData;
+		const std::string blockData = std::to_string(this->impl->index) + std::to_string(this->impl->nonce) + 
+			this->impl->previousHash + combinedTxsData;
 
 		const std::vector<uint8_t> rawBlockData = Volt::GetRawString(blockData);
 
@@ -80,6 +84,11 @@ namespace Volt
 	const uint64_t& Block::GetTimestamp() const
 	{
 		return this->impl->timestamp;
+	}
+
+	const uint64_t& Block::GetDifficulty() const
+	{
+		return this->impl->difficulty;
 	}
 
 	const uint64_t& Block::GetNonce() const
@@ -104,12 +113,10 @@ namespace Volt
 
 	ErrorCode VerifyBlock(const Block& block, const Chain& chain)
 	{
-		ErrorCode error;
-		
 		// Check that all the transactions contained are valid
 		for (const auto& tx : block.GetTransactions())
 		{
-			error = Volt::VerifyTransaction(tx);
+			ErrorCode error = Volt::VerifyTransaction(tx);
 			if (error)
 				return error;
 		}
@@ -139,16 +146,96 @@ namespace Volt
 
 		// Check that the hash of the block is valid [TODO: SUBJECT TO CHANGE]
 		std::string hash;
-		error = block.GenerateBlockHash(hash);
-		if (!error && (block.GetBlockHash() != hash))
+		ErrorCode error = block.GenerateBlockHash(hash);
+		if (error)
+			return error;
+
+		const std::string hashInput = hash + std::to_string(block.GetTimestamp());
+		std::vector<uint8_t> buffer = Volt::GetRawString(hashInput), finalHashBuffer;
+
+		error = Volt::GetSHA256Digest(buffer, finalHashBuffer);
+		if (error)
+			return error;
+
+		if (block.GetBlockHash() != Volt::ConvertByteToHexData(finalHashBuffer))
 			return ErrorID::BLOCK_HASH_INVALID;
 
-		return error;
+		return ErrorID::NONE;
+	}
+
+	ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain, uint64_t difficulty,
+		std::function<bool(const Transaction&)> txHandler)
+	{
+		// Get the latest block in the chain and get transactions to be included into the block
+		const Block& latestBlock = chain.GetLatestBlock();
+		std::vector<Transaction> txs;
+
+		if (txHandler) // Use the given custom transaction handler function
+		{
+			for (size_t i = 0; i < pool.GetPoolSize(); i++)
+			{
+				if (i < VOLT_MAX_TRANSACTIONS_PER_BLOCK)
+				{
+					const Transaction tx = Volt::PopTransactionAtIndex(pool, i);
+					if (txHandler(std::ref(tx)))
+						txs.emplace_back(tx);
+				}
+				else
+					break;
+			}
+		}
+		else // No custom handler function was given, so just get the transactions at the front of queue in the mempool
+			Volt::PopTransactions(pool, VOLT_MAX_TRANSACTIONS_PER_BLOCK);
+
+		// Initialize the block
+		minedBlock = { latestBlock.GetIndex() + 1, latestBlock.GetBlockHash(), txs, difficulty };
+
+		// Start doing proof-of-work (find a hash that satisfies the block difficulty)
+		std::string generatedHash;
+		bool hashValid = false;
+
+		while (!hashValid)
+		{
+			// Generate a new hash
+			ErrorCode error = minedBlock.GenerateBlockHash(generatedHash);
+			if (error)
+				return error;
+
+			// Check if the hash is valid
+			hashValid = true;
+			for (size_t i = 0; i < difficulty; i++)
+			{
+				if (generatedHash[i] != '0')
+				{
+					hashValid = false;
+					break;
+				}
+			}
+
+			// Increment the nonce value if the generated hash doesn't satisfy the block difficulty
+			if (!hashValid)
+				minedBlock.impl->nonce++;
+		}
+
+		// Assign the current timestamp to the block
+		minedBlock.impl->timestamp = Volt::GetTimeSinceEpoch();
+
+		// Get the hash of the generated hash combined with the timestamp
+		const std::string hashInput = generatedHash + std::to_string(minedBlock.GetTimestamp());
+		std::vector<uint8_t> buffer = Volt::GetRawString(hashInput), finalHashBuffer;
+
+		ErrorCode error = Volt::GetSHA256Digest(buffer, finalHashBuffer);
+		if (error)
+			return error;
+		
+		// Finally, assign the final generated hash to the block
+		minedBlock.impl->hash = Volt::ConvertByteToHexData(finalHashBuffer);
+		return ErrorID::NONE;
 	}
 
 	Block GetGenesisBlock()
 	{
-		return Block(0, "", {}, "238862AA5024EC554942E5D009E84D0AE3586D96F81E1190FAA69C67B559486C", 1638318078);
+		return Block(0, "", {}, 0, "AC7FDA5E0E2BF8B6600D4AFAC9C6095E89E9C14B30BC4A114FAB090BCAFADC79", 1638318078);
 	}
 
 	bool operator==(const Block& lhs, const Block& rhs)

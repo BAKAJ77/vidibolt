@@ -36,6 +36,11 @@ namespace Volt
 		this->impl = std::make_unique<Implementation>(pool.impl->pendingTxs);
 	}
 
+	uint32_t MemPool::GetPoolSize() const
+	{
+		return (uint32_t)this->impl->pendingTxs.GetSize();
+	}
+
 	ErrorCode PushTransaction(MemPool& pool, const Transaction& tx, const Chain& chain)
 	{
 		// Check if transaction is already in the mem pool
@@ -73,6 +78,13 @@ namespace Volt
 		// The transaction has been deduced as valid so add it to mempool
 		pool.impl->pendingTxs.PushBackElement(tx);
 		return ErrorID::NONE;
+	}
+
+	Transaction PopTransactionAtIndex(MemPool& pool, size_t index)
+	{
+		const Transaction tx = pool.impl->pendingTxs[index];
+		pool.impl->pendingTxs.PopElementAtIndex(index);
+		return tx;
 	}
 
 	std::vector<Transaction> PopTransactions(MemPool& pool, uint32_t numTxs)
