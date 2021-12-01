@@ -11,9 +11,7 @@
 
 namespace Volt
 {
-	/*
-		Handles client side operations for outbound connections.
-	*/
+	// Handles client side operations for outbound connections.
 	class TCPClient
 	{
 	private:
@@ -27,34 +25,24 @@ namespace Volt
 
 		VOLT_API void operator=(const TCPClient& client) = delete;
 
-		/*
-			Connects to server-side of peer with the ipv4 address specified.
-		*/
+		// Connects to server-side of peer with the ipv4 address specified.
+		// An error code is returned in the event of a failure occurring.
 		VOLT_API ErrorCode Connect(const std::string& address);
 
-		/*
-			Closes the currently open connection.
-		*/
+		// Closes the currently open connection.
 		VOLT_API void Disconnect();
 
-		/*
-			Pushes message data into pending queue in order to be transmitted.
-		*/
+		// Pushes message data into pending queue in order to be transmitted.
 		VOLT_API void PushOutboundMessage(const Message& msg);
 
-		/*
-			Transmits all pending messages and recieves all pending incoming messages.
-		*/
+		// Transmits all pending messages and recieves all pending incoming messages.
+		// An error code is returned in the event of a failure occurring.
 		VOLT_API ErrorCode UpdateState();
 
-		/*
-			Returns a queue of recieved messages.
-		*/
+		// Returns a queue of recieved messages.
 		VOLT_API Deque<RecievedMessage>& GetInboundMessages();
 
-		/*
-			Returns the port number that connections are being opened on by the client.
-		*/
+		// Returns the port number that connections are being opened on by the client.
 		VOLT_API const uint32_t& GetPort() const;
 	};
 }

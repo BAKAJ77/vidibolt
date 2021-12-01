@@ -10,9 +10,7 @@
 
 namespace Volt
 {
-	/*
-		Handles server side operations for inbound connections.
-	*/
+	// Handles server side operations for inbound connections.
 	class TCPServer
 	{
 	private:
@@ -26,49 +24,32 @@ namespace Volt
 
 		VOLT_API void operator=(const TCPServer& server) = delete;
 
-		/*
-			Starts up operation for listening for new inbound connections.
-		*/
+		// Starts up operation for listening for new inbound connections.
 		VOLT_API void StartListener();
 
-		/*
-			Stops the connection listening operation.
-		*/
+		// Stops the connection listening operation.
 		VOLT_API void StopListener();
 
-		/*
-			Pushes a message to be transmitted through the connection which the recieved message came from.
-		*/
+		// Pushes a message to be transmitted through the connection which the recieved message came from.
+		// Returns an error code in the event of a failure occurring.
 		VOLT_API ErrorCode PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut);
 
-		/*
-			Pushes a message to be transmitted to all open connections in the queue.
-		*/
+		// Pushes a message to be transmitted to all open connections in the queue.
 		VOLT_API void BroadcastOutboundMessage(const Message& msg);
 
-		/*
-			All pending [outbound/inbound] messages in the various open connections are [transmitted/recieved].
-		*/
+		// All pending [outbound/inbound] messages in the various open connections are [transmitted/recieved].
 		VOLT_API void UpdateState();
 
-		/*
-			Returns the messgaes recieved, the queue holds messages recieved from various connections.
-		*/
+		// Returns the messgaes recieved, the queue holds messages recieved from various connections.
 		VOLT_API Deque<RecievedMessage>& GetInboundMessages();
 
-		/*
-			Returns the port number on which connections are being listened for.
-		*/
+		// Returns the port number on which connections are being listened for.
 		VOLT_API const uint32_t& GetPortNumber() const;
 
-		/*
-			Returns TRUE if the listener is actively listening for new connections, else FALSE is returned.
-		*/
+		// Returns TRUE if the listener is actively listening for new connections, else FALSE is returned.
 		VOLT_API bool IsListening() const;
 
-		/*
-			Returns an error code indicating whether an error (relating to the listening operation) has occured.
-		*/
+		// Returns an error code indicating whether an error (relating to the listening operation) has occured.
 		VOLT_API const ErrorCode& GetListenerErrorState() const;
 	};
 }

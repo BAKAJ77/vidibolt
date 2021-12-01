@@ -15,17 +15,13 @@ namespace Volt
 		uint32_t port;
 		UnorderedMap<uint64_t, std::string> peerList; // <guid : uint64_t, address : std::string>
 	private:
-		/*
-			Retrieves a unoccupied GUID to be assigned to the node.
-		*/
+		// Retrieves a unoccupied GUID to be assigned to the node.
 		uint64_t RetrieveNodeGUID()
 		{
 			return 0; // TEMPORARY
 		}
 
-		/*
-			Retrieves unordered map table of peers for connection routing.
-		*/
+		// Retrieves unordered map table of peers for connection routing.
 		void RetrieveNodePeerList()
 		{
 			// We only need 64 nodes to be able to connect to any node in the network

@@ -24,9 +24,7 @@ namespace Volt
 
 		ErrorCode listenerErrorState;
 	private:
-		/*
-			Callback function which handles error checking and initiation of a connection when one is accepted.
-		*/
+		// Callback function which handles error checking and initiation of a connection when one is accepted.
 		void OnConnectionAccept(const system::error_code& ec, ConnectionPtr connection)
 		{
 			if (!ec)
@@ -67,6 +65,7 @@ namespace Volt
 
 		void StopListener()
 		{
+			// Stop context then join the thread
 			this->ctx.stop();
 			if (this->listeningThread.joinable())
 				this->listeningThread.join();

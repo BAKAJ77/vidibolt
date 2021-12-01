@@ -54,6 +54,9 @@ namespace Volt
 		if (tx.GetSenderKey().empty() || tx.GetRecipientKey().empty())
 			return ErrorID::TRANSACTION_KEY_NOT_SPECIFIED;
 
+		// [TODO]: THIS FUNCTION WILL TAKE A EXTRA PARAM 'const Chain&' TO CHECK IF THE BALANCE
+		// OF SENDER IS SUFFICIENT FOR TRANSACTION.
+
 		// The transaction timestamp must be within 10 mins of current time
 		// or the transaction is written off as expired
 		constexpr uint64_t timeOutCutoff = 600;
@@ -64,9 +67,6 @@ namespace Volt
 		ErrorCode error = Volt::VerifyTransaction(tx);
 		if (error)
 			return error;
-
-		// [TODO]: THIS FUNCTION WILL TAKE A EXTRA PARAM 'const Chain&' TO CHECK IF THE BALANCE
-		// OF SENDER IS SUFFICIENT FOR TRANSACTION.
 
 		// The transaction has been deduced as valid so add it to mempool
 		pool.impl->pendingTxs.PushBackElement(tx);

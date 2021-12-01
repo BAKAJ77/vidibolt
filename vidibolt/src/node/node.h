@@ -9,9 +9,7 @@
 
 namespace Volt
 {
-	/*
-		Handles VOLT node functionality e.g. broadcasting data to other nodes, recieving data from other nodes etc.
-	*/
+	// Handles VOLT node functionality e.g. broadcasting data to other nodes, recieving data from other nodes etc.
 	class Node
 	{
 	private:
@@ -25,19 +23,15 @@ namespace Volt
 
 		VOLT_API void operator=(const Node& node) = delete;
 
-		/* TEMPORARY FUNCTIONS */
+		///// TEMPORARY FUNCTIONS /////
 		VOLT_API TCPClient& GetClient();
 		VOLT_API TCPServer& GetServer();
-		/***********************/
+		///////////////////////////////
 
-		/*
-			Returns the port number being used by node.
-		*/
+		// Returns the port number being used by node.
 		VOLT_API const uint32_t& GetPort() const;
 
-		/*
-			Returns the GUID of the node.
-		*/
+		// Returns the GUID of the node.
 		VOLT_API const uint64_t& GetGUID() const;
 	};
 }

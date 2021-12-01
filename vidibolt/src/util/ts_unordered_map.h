@@ -8,9 +8,7 @@
 
 namespace Volt
 {
-	/*
-		A unordered map class that wraps the std::unordered_map operations with locks for increased thread safety.
-	*/
+	// A unordered map class that wraps the std::unordered_map operations with locks for increased thread safety.
 	template <typename Key, typename Ty> class UnorderedMap
 	{
 	private:
@@ -132,74 +130,46 @@ namespace Volt
 
 		VOLT_EXPORT void operator=(const UnorderedMap<Key, Ty>& other);
 
-		/*
-			Reserves space for at least the specified number of elements and regenerates the hash table.
-		*/
+		// Reserves space for at least the specified number of elements and regenerates the hash table.
 		VOLT_EXPORT void Reserve(size_t count);
 
-		/*
-			Inserts new specified element into the container.
-		*/
+		// Inserts new specified element into the container.
 		VOLT_EXPORT void Insert(const Key& key, const Ty& data);
 
-		/*
-			Emplaces the specified element into the container.
-		*/
+		// Emplaces the specified element into the container.
 		VOLT_EXPORT void Emplace(const Key& key, const Ty& data);
 
-		/*
-			Removes element, matching the specified key, from the container.
-		*/
+		// Removes element, matching the specified key, from the container.
 		VOLT_EXPORT void Erase(const Key& key);
 
-		/*
-			Clears the container of all existing elements.
-		*/
+		// Clears the container of all existing elements.
 		VOLT_EXPORT void ClearElements();
 
-		/*
-			Returns the value of the element with the matching key specified.
-		*/
+		// Returns the value of the element with the matching key specified.
 		VOLT_EXPORT Ty& GetElement(const Key& key);
 
-		/*
-			Returns the value of the element with the matching key specified.
-		*/
+		// Returns the value of the element with the matching key specified.
 		VOLT_EXPORT const Ty& GetElement(const Key& key) const;
 
-		/*
-			Returns the value of the element at the index position specified.
-		*/
+		// Returns the value of the element at the index position specified.
 		VOLT_EXPORT Ty& GetElementAtIndex(size_t indexPos);
 
-		/*
-			Returns the value of the element at the index position specified.
-		*/
+		// Returns the value of the element at the index position specified.
 		VOLT_EXPORT const Ty& GetElementAtIndex(size_t indexPos) const;
 
-		/*
-			Returns TRUE if an element with the matchig key specified is found, else FALSE is returned.
-		*/
+		// Returns TRUE if an element with the matchig key specified is found, else FALSE is returned.
 		VOLT_EXPORT bool ElementExists(const Key& key) const;
 
-		/*
-			Returns the amount of elements in the container.
-		*/
+		// Returns the amount of elements in the container.
 		VOLT_EXPORT size_t GetSize() const;
 
-		/*
-			Returns TRUE if container is empty, else FALSE is returned.
-		*/
+		// Returns TRUE if container is empty, else FALSE is returned.
 		VOLT_EXPORT bool IsEmpty() const;
 
-		/*
-			Operator overload that returns the element that has a key matching the one specified.
-		*/
+		// Operator overload that returns the element that has a key matching the one specified.
 		VOLT_EXPORT Ty& operator[](const Key& key);
 
-		/*
-			Operator overload that returns the element that has a key matching the one specified.
-		*/
+		// Operator overload that returns the element that has a key matching the one specified.
 		VOLT_EXPORT const Ty& operator[](const Key& key) const;
 	};
 }

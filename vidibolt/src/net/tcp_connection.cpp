@@ -15,9 +15,7 @@ namespace Volt
 		Deque<RecievedMessage>& inboundMsgs;
 		Deque<Message> outboundMsgs;
 	private:
-		/*
-			Callback handler function which checks for errors once the message data has been sent.
-		*/
+		// Callback handler function which checks for errors once the message data has been sent.
 		void OnTransmissionCompletion(const system::error_code& ec, size_t bytesSent, system::error_code& ecOut)
 		{
 			// Check for errors that occured when data was transmitted
@@ -25,10 +23,8 @@ namespace Volt
 				ecOut = ec;
 		}
 
-		/*
-			Callback handler function which receieves and reads the payload data of the incoming message once the header
-			of the message has been fully recieved and read, also errors are checked for.
-		*/
+		// Callback handler function which receieves and reads the payload data of the incoming message once the header
+		// of the message has been fully recievedand read, also errors are checked for.
 		void OnRecieveCompletion(const system::error_code& ec, size_t bytesRecieved, const std::vector<uint8_t>& buffer,
 			system::error_code& ecOut)
 		{
@@ -52,11 +48,9 @@ namespace Volt
 			}
 		}
 
-		/*
-			Sets up the vector buffer given by allocating the amount of memory specified.
-			The data in the buffer (if any) is cleared before allocating by default but this can be prevented via the 
-			'clearBuffer' parameter.
-		*/
+		// Sets up the vector buffer given by allocating the amount of memory specified.
+		// The data in the buffer(if any) is cleared before allocating by default but this can be prevented via the
+		// 'clearBuffer' parameter.
 		void SetupBuffer(std::vector<uint8_t>& buffer, size_t bufferSizeReq, bool clearBuffer = true) const
 		{
 			if(clearBuffer)

@@ -10,9 +10,7 @@ namespace Volt
 {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
-	/*
-		An enumeration which holds the purpose of indicating what type of message is being sent/recieved.
-	*/
+	// An enumeration which holds the purpose of indicating what type of message is being sent/recieved.
 	enum class MessageRepType
 	{
 		TEST_TYPE
@@ -20,20 +18,15 @@ namespace Volt
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
-	/*
-		The message header struct which holds data about the message type and 
-		the size of the message payload (the data).
-	*/
+	// The message header struct which holds data about the message type and the size of the message payload(the data).
 	struct Header
 	{
 	public:
 		MessageRepType id;
-		uint32_t sizeBytes;
+		uint32_t sizeBytes = 0;
 	};
 
-	/*
-		The entire message struct which holds the message header and the data being transmitted.
-	*/
+	// The entire message struct which holds the message header and the data being transmitted.
 	struct Message
 	{
 	public:
@@ -43,20 +36,16 @@ namespace Volt
 		Message() = default;
 		~Message() = default;
 
-		/*
-			A operator overload for easier printing of message data to the console.
-		*/
+		// A operator overload for easier printing of message data to the console.
 		friend std::ostream& operator<<(std::ostream& outStream, const Message& msg)
 		{
 			outStream << "| Message ID: " << (int)msg.header.id << " | Message Size (Bytes): " << msg.header.sizeBytes << " |";
 			return outStream;
 		}
 
-		/*
-			An operator overload for seamless pushing of data into the message struct container.
-			This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
-			when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		*/
+		// An operator overload for seamless pushing of data into the message struct container.
+		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
+		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
 		template<typename DataType>
 		friend Message& operator<<(Message& message, const DataType& data)
 		{
@@ -76,11 +65,9 @@ namespace Volt
 			return message; // We return a reference to the message so the operator can be chained
 		}
 
-		/*
-			An operator overload for seamless extracting of data from the message struct container.
-			This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
-			when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		*/
+		// An operator overload for seamless extracting of data from the message struct container.
+		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
+		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
 		template<typename DataType>
 		friend Message& operator>>(Message& message, DataType& data)
 		{
@@ -98,11 +85,9 @@ namespace Volt
 			return message;
 		}
 
-		/*
-			An operator overload for seamless pushing of data into the message struct container.
-			This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
-			when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		*/
+		// An operator overload for seamless pushing of data into the message struct container.
+		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
+		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
 		friend Message& operator<<(Message& message, const std::string& string)
 		{
 			// Get the offset in payload data buffer (a vector of bytes) to insert new data
@@ -120,11 +105,9 @@ namespace Volt
 			return message; // We return a reference to the message so the operator can be chained
 		}
 
-		/*
-			An operator overload for seamless extracting of data from the message struct container.
-			This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
-			when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		*/
+		// An operator overload for seamless extracting of data from the message struct container.
+		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
+		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
 		friend Message& operator>>(Message& message, std::string& string)
 		{
 			// Get the data specifying the length of the string
@@ -146,10 +129,8 @@ namespace Volt
 		}
 	};
 
-	/*
-		Struct which is basically the same as the Message struct however this one is tied to a specific TCP connection
-		with a remote host.
-	*/
+	// Struct which is basically the same as the Message struct however this one is tied to a specific TCP connection
+	// with a remote host.
 	struct RecievedMessage
 	{
 	public:
@@ -162,20 +143,16 @@ namespace Volt
 
 		~RecievedMessage() = default;
 
-		/*
-			A operator overload for easier printing of message data to the console.
-		*/
+		// A operator overload for easier printing of message data to the console.
 		friend std::ostream& operator<<(std::ostream& outStream, const RecievedMessage& message)
 		{
 			outStream << message;
 			return outStream;
 		}
 
-		/*
-			An operator overload for seamless pushing of data into the message struct container.
-			This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
-			when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		*/
+		// An operator overload for seamless pushing of data into the message struct container.
+		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
+		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
 		template<typename DataType>
 		friend RecievedMessage& operator<<(RecievedMessage& message, const DataType& data)
 		{
@@ -183,11 +160,9 @@ namespace Volt
 			return message;
 		}
 
-		/*
-			An operator overload for seamless extracting of data from the message struct container.
-			This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
-			when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		*/
+		// An operator overload for seamless extracting of data from the message struct container.
+		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
+		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
 		template<typename DataType>
 		friend RecievedMessage& operator>>(RecievedMessage& message, DataType& data)
 		{
@@ -195,22 +170,18 @@ namespace Volt
 			return message;
 		}
 
-		/*
-			An operator overload for seamless pushing of data into the message struct container.
-			This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
-			when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		*/
+		// An operator overload for seamless pushing of data into the message struct container.
+		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
+		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
 		friend RecievedMessage& operator<<(RecievedMessage& message, const std::string& string)
 		{
 			message.transmittedMsg << string;
 			return message;
 		}
 
-		/*
-			An operator overload for seamless extracting of data from the message struct container.
-			This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
-			when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		*/
+		// An operator overload for seamless extracting of data from the message struct container.
+		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
+		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
 		friend RecievedMessage& operator>>(RecievedMessage& message, std::string& string)
 		{
 			message.transmittedMsg >> string;

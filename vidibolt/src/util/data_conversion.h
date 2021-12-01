@@ -7,20 +7,14 @@
 
 namespace Volt
 {
-	/*
-		Returns vector array of bytes representing the resulting data from converting from a hex format to a byte format.
-	*/
+	// Returns vector array of bytes representing the resulting data from converting from a hex format to a byte format.
 	extern VOLT_API std::vector<uint8_t> ConvertHexToByteData(const std::string& hex);
 
-	/*
-		Returns resulting hex data string from the conversion of the given byte data to a hexadecimal format.
-	*/
+	// Returns resulting hex data string from the conversion of the given byte data to a hexadecimal format.
 	extern VOLT_API std::string ConvertByteToHexData(const std::vector<uint8_t>& bytes);
 
-	/*
-		Returns vector of characters extracted from string object.
-		NOTE: The unsigned char vector doesn't include the null terminator.
-	*/
+	// Returns vector of characters extracted from string object.
+    // NOTE: The unsigned char vector doesn't include the null terminator.
 	extern VOLT_API std::vector<uint8_t> GetRawString(const std::string& str);
 }
 

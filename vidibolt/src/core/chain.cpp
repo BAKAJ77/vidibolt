@@ -63,6 +63,7 @@ namespace Volt
 
 	uint32_t Chain::GetLatestBlockHeight() const
 	{
+		// Make sure value returned is never less than 0
 		return (uint32_t)std::max(this->impl->blockChain.size() - 1, (size_t)0);
 	}
 

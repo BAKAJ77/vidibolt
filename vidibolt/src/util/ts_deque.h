@@ -10,9 +10,7 @@
 
 namespace Volt
 {
-	/*
-		A double ended queue class that wraps the std::deque operations with locks for increased thread safety.
-	*/
+	// A double ended queue class that wraps the std::deque operations with locks for increased thread safety.
 	template<typename T> class Deque
 	{
 	private:
@@ -116,59 +114,37 @@ namespace Volt
 
 		VOLT_EXPORT void operator=(const Deque<T>& other);
 
-		/*
-			Pushes element to the back of the queue.
-		*/
+		// Pushes element to the back of the queue.
 		VOLT_EXPORT void PushBackElement(const T& data);
 
-		/*
-			Pushes element to the front of the queue.
-		*/
+		// Pushes element to the front of the queue.
 		VOLT_EXPORT void PushFrontElement(const T& data);
 
-		/*
-			Clears out the queue of all elements it contains.
-		*/
+		// Clears out the queue of all elements it contains.
 		VOLT_EXPORT void ClearElements();
 
-		/*
-			Pop the element from the front of the queue.
-		*/
+		// Pop the element from the front of the queue.
 		VOLT_EXPORT void PopFrontElement();
 
-		/*
-			Pop the element from the back of the queue.
-		*/
+		// Pop the element from the back of the queue.
 		VOLT_EXPORT void PopBackElement();
 
-		/*
-			Returns the element at the front of the queue.
-		*/
+		// Returns the element at the front of the queue.
 		VOLT_EXPORT const T& GetFrontElement() const;
 
-		/*
-			Returns the element at the back of the queue.
-		*/
+		// Returns the element at the back of the queue.
 		VOLT_EXPORT const T& GetBackElement() const;
 
-		/*
-			Returns TRUE if the queue is empty, else if it's not then FALSE is returned.
-		*/
+		// Returns TRUE if the queue is empty, else if it's not then FALSE is returned.
 		VOLT_EXPORT bool IsEmpty() const;
 
-		/*
-			Returns the size of the queue.
-		*/
+		// Returns the size of the queue.
 		VOLT_EXPORT size_t GetSize() const;
 
-		/*
-			Operator overload that returns the element at the index specified.
-		*/
+		// Operator overload that returns the element at the index specified.
 		VOLT_EXPORT T& operator[](size_t index);
 
-		/*
-			Operator overload that returns the element at the index specified.
-		*/
+		// Operator overload that returns the element at the index specified.
 		VOLT_EXPORT const T& operator[](size_t index) const;
 	};
 }

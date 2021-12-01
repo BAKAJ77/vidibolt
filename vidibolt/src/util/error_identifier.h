@@ -5,9 +5,7 @@
 
 namespace Volt
 {
-	/*
-		Enumeration that represents the type of error that occured within the execution of a function.
-	*/
+	// Enumeration that represents the type of error that occured within the execution of a function.
 	enum class ErrorID : uint32_t
 	{
 		NONE = 0,
@@ -78,9 +76,10 @@ namespace Volt
 		WOULD_BLOCK_ERROR = 10035
 	};
 
-	struct ErrorCode
+	// A class that wraps the ErrorID enumeration for easier error handling.
+	class ErrorCode
 	{
-	public:
+	private:
 		ErrorID code;
 	public:
 		VOLT_API ErrorCode();
@@ -88,19 +87,13 @@ namespace Volt
 
 		VOLT_API ~ErrorCode();
 
-		/*
-			Operator overload for assignment of an error code value.
-		*/
+		// Operator overload for assignment of an error code value.
 		VOLT_API void operator=(ErrorCode code);
 
-		/*
-			Typecast overload for conversions from ErrorCode to a boolean value.
-		*/
+		// Typecast overload for conversions from ErrorCode to a boolean value.
 		VOLT_API operator bool() const;
 
-		/*
-			Typecast overload for conversions from ErrorCode to a ErrorID value.
-		*/
+		// Typecast overload for conversions from ErrorCode to a ErrorID value.
 		VOLT_API operator ErrorID() const;
 	};
 }

@@ -82,14 +82,16 @@ namespace Volt
 
 	ErrorCode SignTransaction(Transaction& tx, const ECKeyPair& privKey)
 	{
+		// Combine all transaction data into one string of data
 		const std::string txData = std::to_string(tx.GetID()) + std::to_string(tx.GetAmount()) + 
 			std::to_string(tx.GetTimestamp()) + tx.GetSenderKey() + tx.GetRecipientKey();
 
+		// Execute the transaction signing operation
 		std::vector<uint8_t> msgBytes = Volt::GetRawString(txData);
 		std::vector<uint8_t> outputSigniture;
 
 		ErrorCode error = Volt::GetSignedSHA256Digest(msgBytes, privKey, outputSigniture);
-		if (!error)
+		if (!error) // If no error occurred, then store the generated signiture
 			tx.impl->signiture = Volt::ConvertByteToHexData(outputSigniture);
 
 		return error;
@@ -99,7 +101,7 @@ namespace Volt
 	{
 		ErrorCode error;
 
-		// Combine all transaction data into one string
+		// Combine all transaction data into one string of data
 		const std::string txData = std::to_string(tx.GetID()) + std::to_string(tx.GetAmount()) +
 			std::to_string(tx.GetTimestamp()) + tx.GetSenderKey() + tx.GetRecipientKey();
 
@@ -108,7 +110,7 @@ namespace Volt
 		std::vector<uint8_t> signitureBytes = Volt::ConvertHexToByteData(tx.impl->signiture);
 
 		ECKeyPair pubKey(tx.GetSenderKey(), std::string(), &error);
-		if (!error)
+		if (!error) // If no error occurred when creating key pair object, then do signiture verification
 			error = Volt::VerifySHA256Digest(msgBytes, pubKey, signitureBytes);
 
 		return error;

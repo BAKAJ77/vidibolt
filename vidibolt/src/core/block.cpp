@@ -52,7 +52,7 @@ namespace Volt
 
 	ErrorCode Block::GenerateBlockHash(std::string& outputBlockHash) const
 	{
-		// Push the data from all transactions in the block into the string
+		// Combine the data of all transactions into one string of data
 		std::string combinedTxsData;
 		for (const auto& tx : this->impl->txs)
 			combinedTxsData += Volt::SerializeTransaction(tx);
@@ -67,7 +67,7 @@ namespace Volt
 		std::vector<uint8_t> rawHashDigest;
 		ErrorCode error = Volt::GetSHA256Digest(rawBlockData, rawHashDigest);
 		if (!error)
-			outputBlockHash = Volt::ConvertByteToHexData(rawHashDigest);
+			outputBlockHash = Volt::ConvertByteToHexData(rawHashDigest); // The block hash was successfully generated
 
 		return error;
 	}

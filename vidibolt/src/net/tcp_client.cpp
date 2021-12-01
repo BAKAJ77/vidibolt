@@ -62,9 +62,13 @@ namespace Volt
 			ErrorCode error;
 			if (this->outboundConnection)
 			{
+				// Transmit all pending outbound data and recieve all inbound data
 				error = this->outboundConnection->FlushSocket();
-				if (error)
+				if (error == ErrorID::CONNECTION_RESET_ERROR || error == ErrorID::NOT_CONNECTED_ERROR ||
+					error == ErrorID::EOF_ERROR)
+				{
 					this->outboundConnection.reset();
+				}
 			}
 			else
 				error = ErrorID::CONNECTION_NO_LONGER_OPEN;
