@@ -97,6 +97,9 @@ namespace Volt
 		VOLT_API const std::string& GetSigniture() const;
 	};
 
+	/*
+		Operator overload for checking if both the transaction on the left and right hand side are equal.
+	*/
 	extern VOLT_API bool operator==(const Transaction& lhs, const Transaction& rhs);
 }
 
