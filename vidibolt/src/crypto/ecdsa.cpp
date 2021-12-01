@@ -55,7 +55,7 @@ namespace Volt
 		// Note that while a private key must be given, the private key isn't necessary
 		if (publicKey.substr(0, 4) != "VPK_")
 		{
-			if (error) 
+			if (error)
 				*error = ErrorID::ECDSA_PUBLIC_KEY_INVALID;
 		}
 		else
