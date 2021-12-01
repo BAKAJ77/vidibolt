@@ -44,8 +44,8 @@ namespace Volt
 		// Also, the mined block is returned via the second parameter 'minedBlock'.
 		// 
 		// An error code is returned in the event of a failure occurring.
-		friend extern VOLT_API ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain,
-			uint64_t difficulty, std::function<bool(const Transaction&)> txHandler = nullptr);
+		friend extern VOLT_API ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, Chain& chain,
+			uint64_t difficulty, const ECKeyPair& minerPublicKey, std::function<bool(const Transaction&)> txHandler = nullptr);
 
 		// Generates the hash of the block based on its contents. 
 		// An error code is returned in the event of a failure occurring.

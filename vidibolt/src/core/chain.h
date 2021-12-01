@@ -2,6 +2,7 @@
 #define VIDIBOLT_CORE_CHAIN_H
 
 #include <util/volt_api.h>
+#include <crypto/ecdsa.h>
 #include <core/block.h>
 
 #include <vector>
@@ -44,7 +45,7 @@ namespace Volt
 		VOLT_API const std::vector<Block>& GetBlockChain() const;
 
 		// Returns the amount of coins currently being held by a public key address
-		VOLT_API uint64_t GetAddressBalance(const std::string& publicKey) const;
+		VOLT_API double GetAddressBalance(const ECKeyPair& publicKey) const;
 
 		// Returns the height index of the latest block in the chain.
 		VOLT_API uint32_t GetLatestBlockHeight() const;

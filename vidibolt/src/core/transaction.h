@@ -13,6 +13,13 @@ using namespace boost;
 
 namespace Volt
 {
+	// An enumeration that represents the type of the transaction
+	enum class TransactionType : uint32_t
+	{
+		TRANSFER,
+		MINING_REWARD
+	};
+
 	// A class that contains the data of a transaction.
 	class Transaction
 	{
@@ -22,8 +29,8 @@ namespace Volt
 	public:
 		VOLT_API Transaction();
 		VOLT_API Transaction(const Transaction& tx);
-		VOLT_API Transaction(uint64_t id, uint64_t amount, uint64_t timestamp, const std::string& senderPK,
-			const std::string& recipientPK, const std::string& signiture = "");
+		VOLT_API Transaction(TransactionType type, uint64_t id, double amount, uint64_t timestamp, 
+			const std::string& senderPK, const std::string& recipientPK, const std::string& signiture = "");
 
 		VOLT_API ~Transaction();
 
@@ -53,11 +60,14 @@ namespace Volt
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+		// Returns the type of the transaction.
+		VOLT_API const TransactionType& GetType() const;
+
 		// Returns the ID of the transaction.
 		VOLT_API const uint64_t& GetID() const;
 
 		// Returns the amount tranferred in the transaction.
-		VOLT_API const uint64_t& GetAmount() const;
+		VOLT_API const double& GetAmount() const;
 
 		// Returns the timestamp of the transaction.
 		VOLT_API const uint64_t& GetTimestamp() const;

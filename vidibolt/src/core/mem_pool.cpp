@@ -61,7 +61,12 @@ namespace Volt
 			return ErrorID::TRANSACTION_KEY_NOT_SPECIFIED;
 
 		// The sender must have a sufficient balance to execute transaction
-		if (chain.GetAddressBalance(tx.GetSenderKey()) < tx.GetAmount())
+		ErrorCode keyPairError;
+		ECKeyPair publicKey(tx.GetSenderKey(), std::string(), &keyPairError);
+		if (keyPairError)
+			return keyPairError;
+
+		if (chain.GetAddressBalance(publicKey) < tx.GetAmount())
 			return ErrorID::TRANSACTION_SENDER_BALANCE_INSUFFICIENT;
 
 		// The transaction timestamp must be within 10 mins of current time

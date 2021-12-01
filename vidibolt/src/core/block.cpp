@@ -131,7 +131,7 @@ namespace Volt
 			if (block.GetPreviousBlockHash() != prevBlock.GetBlockHash())
 				return ErrorID::BLOCK_PREVIOUS_HASH_INVALID;
 
-			if (block.GetTimestamp() <= prevBlock.GetTimestamp())
+			if (block.GetTimestamp() < prevBlock.GetTimestamp())
 				return ErrorID::BLOCK_TIMESTAMP_INVALID;
 
 			if (block.GetIndex() != prevBlock.GetIndex() + 1)
@@ -163,8 +163,8 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
-	ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain, uint64_t difficulty,
-		std::function<bool(const Transaction&)> txHandler)
+	ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, Chain& chain, uint64_t difficulty, 
+		const ECKeyPair& minerPublicKey, std::function<bool(const Transaction&)> txHandler)
 	{
 		// Get the latest block in the chain and get transactions to be included into the block
 		const Block& latestBlock = chain.GetLatestBlock();
@@ -185,7 +185,13 @@ namespace Volt
 			}
 		}
 		else // No custom handler function was given, so just get the transactions at the front of queue in the mempool
-			Volt::PopTransactions(pool, VOLT_MAX_TRANSACTIONS_PER_BLOCK);
+			txs = Volt::PopTransactions(pool, VOLT_MAX_TRANSACTIONS_PER_BLOCK);
+
+		// Add mining reward transaction for the miner to the block
+		Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX), VOLT_MINING_REWARD,
+			Volt::GetTimeSinceEpoch(), "", minerPublicKey.GetPublicKeyHex());
+
+		txs.emplace_back(tx);
 
 		// Initialize the block
 		minedBlock = { latestBlock.GetIndex() + 1, latestBlock.GetBlockHash(), txs, difficulty };
@@ -228,9 +234,11 @@ namespace Volt
 		if (error)
 			return error;
 		
-		// Finally, assign the final generated hash to the block
+		// Finally, assign the final generated hash to the block then append it to the chain
 		minedBlock.impl->hash = Volt::ConvertByteToHexData(finalHashBuffer);
-		return ErrorID::NONE;
+		error = Volt::PushBlock(chain, minedBlock);
+
+		return error;
 	}
 
 	Block GetGenesisBlock()

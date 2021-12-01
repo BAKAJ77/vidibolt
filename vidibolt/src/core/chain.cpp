@@ -61,16 +61,16 @@ namespace Volt
 		return this->impl->blockChain;
 	}
 
-	uint64_t Chain::GetAddressBalance(const std::string& publicKey) const
+	double Chain::GetAddressBalance(const ECKeyPair& publicKey) const
 	{
-		uint64_t balance = 0;
+		double balance = 0;
 		for (const auto& block : this->impl->blockChain)
 		{
 			for (const auto& tx : block.GetTransactions())
 			{
-				if (publicKey == tx.GetSenderKey())
+				if (publicKey.GetPublicKeyHex() == tx.GetSenderKey())
 					balance -= tx.GetAmount();
-				else if (publicKey == tx.GetRecipientKey())
+				else if (publicKey.GetPublicKeyHex() == tx.GetRecipientKey())
 					balance += tx.GetAmount();
 			}
 		}

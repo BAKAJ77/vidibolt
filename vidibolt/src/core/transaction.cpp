@@ -9,16 +9,20 @@ namespace Volt
 	class Transaction::Implementation
 	{
 	public:
-		uint64_t id, amount, timestamp;
+		TransactionType type;
+		uint64_t id, timestamp;
+		double amount;
+
 		std::string senderPK, recipientPK, signiture;
 	public:
 		Implementation() :
-			id(0), amount(0), timestamp(0)
+			type(TransactionType::TRANSFER), id(0), amount(0), timestamp(0)
 		{}
 
-		Implementation(uint64_t id, uint64_t amount, uint64_t timestamp, const std::string& senderPK,
+		Implementation(TransactionType type, uint64_t id, double amount, uint64_t timestamp, const std::string& senderPK,
 			const std::string& recipientPK, const std::string& signiture) :
-			id(id), amount(amount), timestamp(timestamp), senderPK(senderPK), recipientPK(recipientPK), signiture(signiture)
+			type(type), id(id), amount(amount), timestamp(timestamp), senderPK(senderPK), recipientPK(recipientPK), 
+			signiture(signiture)
 		{}
 
 		~Implementation() = default;
@@ -31,21 +35,26 @@ namespace Volt
 	{}
 
 	Transaction::Transaction(const Transaction& tx) :
-		impl(std::make_unique<Implementation>(tx.GetID(), tx.GetAmount(), tx.GetTimestamp(), tx.GetSenderKey(),
+		impl(std::make_unique<Implementation>(tx.GetType(), tx.GetID(), tx.GetAmount(), tx.GetTimestamp(), tx.GetSenderKey(),
 			tx.GetRecipientKey(), tx.GetSigniture()))
 	{}
 
-	Transaction::Transaction(uint64_t id, uint64_t amount, uint64_t timestamp, const std::string& senderPK, 
-		const std::string& recipientPK, const std::string& signiture) :
-		impl(std::make_unique<Implementation>(id, amount, timestamp, senderPK, recipientPK, signiture))
+	Transaction::Transaction(TransactionType type, uint64_t id, double amount, uint64_t timestamp, 
+		const std::string& senderPK, const std::string& recipientPK, const std::string& signiture) :
+		impl(std::make_unique<Implementation>(type, id, amount, timestamp, senderPK, recipientPK, signiture))
 	{}
 
 	Transaction::~Transaction() = default;
 
 	void Transaction::operator=(const Transaction& tx)
 	{
-		this->impl = std::make_unique<Implementation>(tx.GetID(), tx.GetAmount(), tx.GetTimestamp(), tx.GetSenderKey(),
-			tx.GetRecipientKey(), tx.GetSigniture());
+		this->impl = std::make_unique<Implementation>(tx.GetType(), tx.GetID(), tx.GetAmount(), tx.GetTimestamp(), 
+			tx.GetSenderKey(), tx.GetRecipientKey(), tx.GetSigniture());
+	}
+
+	const TransactionType& Transaction::GetType() const
+	{
+		return this->impl->type;
 	}
 
 	const uint64_t& Transaction::GetID() const
@@ -53,7 +62,7 @@ namespace Volt
 		return this->impl->id;
 	}
 
-	const uint64_t& Transaction::GetAmount() const
+	const double& Transaction::GetAmount() const
 	{
 		return this->impl->amount;
 	}
@@ -101,17 +110,20 @@ namespace Volt
 	{
 		ErrorCode error;
 
-		// Combine all transaction data into one string of data
-		const std::string txData = std::to_string(tx.GetID()) + std::to_string(tx.GetAmount()) +
-			std::to_string(tx.GetTimestamp()) + tx.GetSenderKey() + tx.GetRecipientKey();
+		if (tx.GetType() != TransactionType::MINING_REWARD)
+		{
+			// Combine all transaction data into one string of data
+			const std::string txData = std::to_string(tx.GetID()) + std::to_string(tx.GetAmount()) +
+				std::to_string(tx.GetTimestamp()) + tx.GetSenderKey() + tx.GetRecipientKey();
 
-		// Do transaction signiture verification process
-		std::vector<uint8_t> msgBytes = Volt::GetRawString(txData);
-		std::vector<uint8_t> signitureBytes = Volt::ConvertHexToByteData(tx.impl->signiture);
+			// Do transaction signiture verification process
+			std::vector<uint8_t> msgBytes = Volt::GetRawString(txData);
+			std::vector<uint8_t> signitureBytes = Volt::ConvertHexToByteData(tx.impl->signiture);
 
-		ECKeyPair pubKey(tx.GetSenderKey(), std::string(), &error);
-		if (!error) // If no error occurred when creating key pair object, then do signiture verification
-			error = Volt::VerifySHA256Digest(msgBytes, pubKey, signitureBytes);
+			ECKeyPair pubKey(tx.GetSenderKey(), std::string(), &error);
+			if (!error) // If no error occurred when creating key pair object, then do signiture verification
+				error = Volt::VerifySHA256Digest(msgBytes, pubKey, signitureBytes);
+		}
 
 		return error;
 	}
@@ -124,6 +136,7 @@ namespace Volt
 	void tag_invoke(json::value_from_tag, json::value& obj, const Transaction& tx)
 	{
 		obj = {
+			{ "type", (uint32_t)tx.impl->type },
 			{ "id", tx.impl->id },
 			{ "sender", tx.impl->senderPK },
 			{ "recipient", tx.impl->recipientPK },
@@ -138,8 +151,9 @@ namespace Volt
 		const json::object& object = obj.as_object();
 
 		return Transaction {
+			(TransactionType)json::value_to<uint32_t>(obj.at("type")),
 			json::value_to<uint64_t>(obj.at("id")),
-			json::value_to<uint64_t>(obj.at("amount")),
+			json::value_to<double>(obj.at("amount")),
 			json::value_to<uint64_t>(obj.at("timestamp")),
 			json::value_to<std::string>(obj.at("sender")),
 			json::value_to<std::string>(obj.at("recipient")),
@@ -155,7 +169,8 @@ namespace Volt
 
 	bool operator==(const Transaction& lhs, const Transaction& rhs)
 	{
-		return lhs.GetID() == rhs.GetID() &&
+		return lhs.GetType() == rhs.GetType() &&
+			lhs.GetID() == rhs.GetID() &&
 			lhs.GetAmount() == rhs.GetAmount() &&
 			lhs.GetTimestamp() == rhs.GetTimestamp() &&
 			lhs.GetSenderKey() == rhs.GetSenderKey() &&
