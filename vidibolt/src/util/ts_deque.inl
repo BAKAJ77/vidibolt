@@ -40,6 +40,11 @@ namespace Volt
 		this->impl->PopBackElement();
 	}
 
+	template <typename T> void Deque<T>::PopElementAtIndex(size_t index)
+	{
+		this->impl->PopElementAtIndex(index);
+	}
+
 	template <typename T> const T& Deque<T>::GetFrontElement() const
 	{
 		return this->impl->GetFrontElement();

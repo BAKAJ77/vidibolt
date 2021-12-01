@@ -62,6 +62,15 @@ namespace Volt
 				this->deque.pop_back();
 			}
 
+			void PopElementAtIndex(size_t index)
+			{
+				std::scoped_lock lock(this->mutex);
+				auto elementLoc = this->deque.begin();
+				std::advance(elementLoc, index);
+
+				this->deque.erase(elementLoc);
+			}
+
 			const U& GetFrontElement() const
 			{
 				std::scoped_lock lock(this->mutex);
@@ -128,6 +137,9 @@ namespace Volt
 
 		// Pop the element from the back of the queue.
 		VOLT_EXPORT void PopBackElement();
+
+		// Pops the element at the index specified in the queue.
+		VOLT_EXPORT void PopElementAtIndex(size_t index);
 
 		// Returns the element at the front of the queue.
 		VOLT_EXPORT const T& GetFrontElement() const;
