@@ -1,5 +1,6 @@
 #include <core/block.h>
 #include <crypto/sha256.h>
+#include <core/chain.h>
 
 namespace Volt
 {
@@ -49,7 +50,7 @@ namespace Volt
 			block.GetTransactions(), block.GetBlockHash());
 	}
 
-	ErrorID Block::GenerateBlockHash()
+	ErrorID Block::GenerateBlockHash(std::string& outputBlockHash) const
 	{
 		// Push the data from all transactions in the block into the string
 		std::string combinedTxsData;
@@ -66,7 +67,7 @@ namespace Volt
 		std::vector<uint8_t> rawHashDigest;
 		ErrorID error = Volt::GetSHA256Digest(rawBlockData, rawHashDigest);
 		if (error == ErrorID::NONE)
-			this->impl->hash = Volt::ConvertByteToHexData(rawHashDigest);
+			outputBlockHash = Volt::ConvertByteToHexData(rawHashDigest);
 
 		return error;
 	}
@@ -99,6 +100,79 @@ namespace Volt
 	const std::vector<Transaction>& Block::GetTransactions() const
 	{
 		return this->impl->txs;
+	}
+
+	ErrorID VerifyBlock(const Block& block, const Chain& chain, bool& blockValid)
+	{
+		ErrorID error = ErrorID::NONE;
+		blockValid = true;
+		
+		// Check that all the transactions contained are valid
+		for (const auto& tx : block.GetTransactions())
+		{
+			error = Volt::VerifyTransaction(tx, blockValid);
+			if ((error != ErrorID::NONE) || (!blockValid))
+				return error;
+		}
+
+		// Check that the previous hash stored in the block is correct and the timestamp make sense 
+		// (the timestamp of the this block must be larger than the previous block's timestamp).
+		// 
+		// Also, the index of the block must be equal to the index of the previous block + 1
+		if (block.GetIndex() != 0)
+		{
+			const Block& prevBlock = chain.GetBlockAtIndexHeight(block.GetIndex() - 1);
+			if ((block.GetPreviousBlockHash() != prevBlock.GetBlockHash()) ||
+				(block.GetTimestamp() <= prevBlock.GetTimestamp()) || 
+				(block.GetIndex() != prevBlock.GetIndex() + 1))
+			{
+				blockValid = false;
+				return error;
+			}
+		}
+		else
+		{
+			const Block& genesisBlock = chain.GetBlockChain().front();
+			if (genesisBlock != Volt::GetGenesisBlock())
+			{
+				blockValid = false;
+				return error;
+			}
+		}
+
+		// Check that the hash of the block is valid [TODO: SUBJECT TO CHANGE]
+		std::string hash;
+		error = block.GenerateBlockHash(hash);
+		if ((error != ErrorID::NONE) || (block.GetBlockHash() != hash))
+		{
+			blockValid = false;
+			return error;
+		}
+
+		return error;
+	}
+
+	Block GetGenesisBlock()
+	{
+		return Block(0, "", {}, "238862aa5024ec554942e5d009e84d0ae3586d96f81e1190faa69c67b559486c", 1638318078);
+	}
+
+	bool operator==(const Block& lhs, const Block& rhs)
+	{
+		return lhs.GetIndex() == rhs.GetIndex() &&
+			lhs.GetTimestamp() == rhs.GetTimestamp() &&
+			lhs.GetNonce() == rhs.GetNonce() &&
+			lhs.GetPreviousBlockHash() == rhs.GetPreviousBlockHash() &&
+			lhs.GetBlockHash() == rhs.GetBlockHash();
+	}
+
+	bool operator!=(const Block& lhs, const Block& rhs)
+	{
+		return lhs.GetIndex() != rhs.GetIndex() ||
+			lhs.GetTimestamp() != rhs.GetTimestamp() ||
+			lhs.GetNonce() != rhs.GetNonce() ||
+			lhs.GetPreviousBlockHash() != rhs.GetPreviousBlockHash() ||
+			lhs.GetBlockHash() != rhs.GetBlockHash();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

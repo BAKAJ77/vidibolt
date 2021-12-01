@@ -10,6 +10,8 @@
 
 namespace Volt
 {
+	class Chain;
+
 	/*
 		A class that contains data belonging to a block.
 	*/
@@ -32,10 +34,16 @@ namespace Volt
 		VOLT_API void operator=(const Block& block);
 
 		/*
+			Checks if the block specified is valid or not, the validity of the block is returned via the 'blockValid' parameter.
+			Returns error ID if an error occurs.
+		*/
+		friend extern VOLT_API ErrorID VerifyBlock(const Block& block, const Chain& chain, bool& blockValid);
+
+		/*
 			Generates the hash of the block based on its contents. 
 			Returns error ID if an error occurs.
 		*/
-		VOLT_API ErrorID GenerateBlockHash();
+		VOLT_API ErrorID GenerateBlockHash(std::string& outputBlockHash) const;
 
 		/*
 			Returns the index of the block.
@@ -67,6 +75,21 @@ namespace Volt
 		*/
 		VOLT_API const std::vector<Transaction>& GetTransactions() const;
 	};
+
+	/*
+		Returns the (hard-coded) genesis block of the entire blockchain.
+	*/
+	extern VOLT_API Block GetGenesisBlock();
+
+	/*
+		Operator overload for checking if both the transaction on the left and right hand side are equal.
+	*/
+	extern VOLT_API bool operator==(const Block& lhs, const Block& rhs);
+
+	/*
+		Operator overload for checking if both the transaction on the left and right hand side are not equal.
+	*/
+	extern VOLT_API bool operator!=(const Block& lhs, const Block& rhs);
 }
 
 #endif
