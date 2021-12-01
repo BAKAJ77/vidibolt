@@ -119,17 +119,17 @@ namespace Volt
 	std::string ECKeyPair::GetPublicKeyHex() const
 	{
 		// Get the public key (aka EC_POINT*)
-		const EC_KEY* EC_KEY_PAIR = EVP_PKEY_get0_EC_KEY(this->keyPair);
-		const EC_POINT* PUBLIC_KEY = EC_KEY_get0_public_key(EC_KEY_PAIR);
+		const EC_KEY* ecKeyPair = EVP_PKEY_get0_EC_KEY(this->keyPair);
+		const EC_POINT* publicKey = EC_KEY_get0_public_key(ecKeyPair);
 
 		// Get data required for conversion to HEX
-		const EC_GROUP* GROUP = EC_KEY_get0_group(EC_KEY_PAIR);
-		const point_conversion_form_t POINT_CONVERSION = EC_GROUP_get_point_conversion_form(GROUP);
+		const EC_GROUP* group = EC_KEY_get0_group(ecKeyPair);
+		const point_conversion_form_t pointConversion = EC_GROUP_get_point_conversion_form(group);
 
-		if (PUBLIC_KEY)
+		if (publicKey)
 		{
 			// Convert the EC_POINT* public key to a hexadecimal format
-			std::string publicKeyHex = EC_POINT_point2hex(GROUP, PUBLIC_KEY, POINT_CONVERSION, nullptr);
+			std::string publicKeyHex = EC_POINT_point2hex(group, publicKey, pointConversion, nullptr);
 			std::transform(publicKeyHex.begin(), publicKeyHex.end(), publicKeyHex.begin(), ::tolower);
 
 			return  "vpk_" + publicKeyHex;
@@ -141,13 +141,13 @@ namespace Volt
 	std::string ECKeyPair::GetPrivateKeyHex() const
 	{
 		// Get the public key (aka EC_POINT*)
-		const EC_KEY* EC_KEY_PAIR = EVP_PKEY_get0_EC_KEY(this->keyPair);
-		const BIGNUM* PRIVATE_KEY = EC_KEY_get0_private_key(EC_KEY_PAIR);
+		const EC_KEY* ecKeyPair = EVP_PKEY_get0_EC_KEY(this->keyPair);
+		const BIGNUM* privateKey = EC_KEY_get0_private_key(ecKeyPair);
 
-		if (PRIVATE_KEY)
+		if (privateKey)
 		{
 			// Convert the BIGNUM* private key to a hexadecimal format
-			std::string privateKeyHex = BN_bn2hex(PRIVATE_KEY);
+			std::string privateKeyHex = BN_bn2hex(privateKey);
 			std::transform(privateKeyHex.begin(), privateKeyHex.end(), privateKeyHex.begin(), ::tolower);
 
 			return privateKeyHex;
@@ -158,18 +158,18 @@ namespace Volt
 
 	bool ECKeyPair::HasPublicKey() const
 	{
-		const EC_KEY* EC_KEY_PAIR = EVP_PKEY_get0_EC_KEY(this->keyPair);
-		const EC_POINT* PUBLIC_KEY = EC_KEY_get0_public_key(EC_KEY_PAIR);
+		const EC_KEY* ecKeyPair = EVP_PKEY_get0_EC_KEY(this->keyPair);
+		const EC_POINT* publicKey = EC_KEY_get0_public_key(ecKeyPair);
 
-		return PUBLIC_KEY ? true : false;
+		return publicKey ? true : false;
 	}
 
 	bool ECKeyPair::HasPrivateKey() const
 	{
-		const EC_KEY* EC_KEY_PAIR = EVP_PKEY_get0_EC_KEY(this->keyPair);
-		const BIGNUM* PRIVATE_KEY = EC_KEY_get0_private_key(EC_KEY_PAIR);
+		const EC_KEY* ecKeyPair = EVP_PKEY_get0_EC_KEY(this->keyPair);
+		const BIGNUM* privateKey = EC_KEY_get0_private_key(ecKeyPair);
 
-		return PRIVATE_KEY ? true : false;
+		return privateKey ? true : false;
 	}
 
 	bool ECKeyPair::IsValid() const { return EC_KEY_check_key(EVP_PKEY_get0_EC_KEY(this->keyPair)); }

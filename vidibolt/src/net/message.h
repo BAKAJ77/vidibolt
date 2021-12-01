@@ -54,11 +54,11 @@ namespace Volt
 
 			// Get the offset in payload data buffer (a vector of bytes) to insert new data
 			// Also resize the buffer so it's able to store the new data
-			const size_t OFFSET = message.payloadData.size();
-			message.payloadData.resize(OFFSET + sizeof(data));
+			const size_t offset = message.payloadData.size();
+			message.payloadData.resize(offset + sizeof(data));
 
 			// Copy the data into the bytes buffer
-			memcpy(message.payloadData.data() + OFFSET, &data, sizeof(data));
+			memcpy(message.payloadData.data() + offset, &data, sizeof(data));
 
 			// Update the size (in bytes) counter in the message header
 			message.header.sizeBytes = (uint32_t)message.payloadData.size();
@@ -76,9 +76,9 @@ namespace Volt
 
 			// Get the offset in the payload data buffer where the data will be copied from
 			// Copy the data into the reference variable given then shrink the buffer since the data has been pulled
-			const size_t OFFSET = message.payloadData.size() - sizeof(data);
-			memcpy(&data, message.payloadData.data() + OFFSET, sizeof(data));
-			message.payloadData.resize(OFFSET);
+			const size_t offset = message.payloadData.size() - sizeof(data);
+			memcpy(&data, message.payloadData.data() + offset, sizeof(data));
+			message.payloadData.resize(offset);
 
 			// Update the size (in bytes) counter in the message header
 			message.header.sizeBytes = (uint32_t)message.payloadData.size();
@@ -92,13 +92,13 @@ namespace Volt
 		{
 			// Get the offset in payload data buffer (a vector of bytes) to insert new data
 			// Also resize the buffer so it's able to store the new data AND the data specifying the length of the string
-			const size_t OFFSET = message.payload.size();
-			message.payload.resize(OFFSET + string.size() + sizeof(int));
+			const size_t offset = message.payload.size();
+			message.payload.resize(offset + string.size() + sizeof(int));
 
 			// Copy the data into the bytes buffer
-			const size_t STRING_LEN = string.size();
-			memcpy(message.payload.data() + OFFSET, string.data(), string.size());
-			memcpy(message.payload.data() + OFFSET + string.size(), &STRING_LEN, sizeof(int));
+			const size_t stringLen = string.size();
+			memcpy(message.payload.data() + offset, string.data(), string.size());
+			memcpy(message.payload.data() + offset + string.size(), &stringLen, sizeof(int));
 
 			// Update the size (in bytes) counter in the message header
 			message.header.sizeBytes = (uint32_t)message.payload.size();
@@ -111,17 +111,17 @@ namespace Volt
 		friend Message& operator>>(Message& message, std::string& string)
 		{
 			// Get the data specifying the length of the string
-			const size_t LENGTH_DATA_OFFSET = message.payload.size() - sizeof(int);
+			const size_t lengthDataOffset = message.payload.size() - sizeof(int);
 			size_t stringLen = 0;
-			memcpy(&stringLen, message.payload.data() + LENGTH_DATA_OFFSET, sizeof(int));
+			memcpy(&stringLen, message.payload.data() + lengthDataOffset, sizeof(int));
 
 			// Get the offset in payload data buffer (a vector of bytes), get the string data
 			// then shrink the buffer since the data has been copied from the buffer
-			const size_t STRING_DATA_OFFSET = LENGTH_DATA_OFFSET - stringLen;
+			const size_t stringDataOffset = lengthDataOffset - stringLen;
 
 			string.resize(stringLen);
-			memcpy(string.data(), message.payload.data() + STRING_DATA_OFFSET, stringLen);
-			message.payload.resize(STRING_DATA_OFFSET);
+			memcpy(string.data(), message.payload.data() + stringDataOffset, stringLen);
+			message.payload.resize(stringDataOffset);
 
 			// Update the size (in bytes) counter in the message header
 			message.header.sizeBytes = (uint32_t)message.payload.size();
