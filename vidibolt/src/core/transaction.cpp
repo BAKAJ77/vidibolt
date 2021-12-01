@@ -80,7 +80,7 @@ namespace Volt
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ErrorID SignTransaction(Transaction& tx, const ECKeyPair& privKey)
+	ErrorCode SignTransaction(Transaction& tx, const ECKeyPair& privKey)
 	{
 		const std::string txData = std::to_string(tx.GetID()) + std::to_string(tx.GetAmount()) + 
 			std::to_string(tx.GetTimestamp()) + tx.GetSenderKey() + tx.GetRecipientKey();
@@ -88,30 +88,30 @@ namespace Volt
 		std::vector<uint8_t> msgBytes = Volt::GetRawString(txData);
 		std::vector<uint8_t> outputSigniture;
 
-		ErrorID errorID = Volt::GetSignedSHA256Digest(msgBytes, privKey, outputSigniture);
-		if(errorID == ErrorID::NONE)
+		ErrorCode error = Volt::GetSignedSHA256Digest(msgBytes, privKey, outputSigniture);
+		if (!error)
 			tx.impl->signiture = Volt::ConvertByteToHexData(outputSigniture);
 
-		return errorID;
+		return error;
 	}
 
-	ErrorID VerifyTransaction(const Transaction& tx, bool& txValid)
+	ErrorCode VerifyTransaction(const Transaction& tx)
 	{
+		ErrorCode error;
+
+		// Combine all transaction data into one string
 		const std::string txData = std::to_string(tx.GetID()) + std::to_string(tx.GetAmount()) +
 			std::to_string(tx.GetTimestamp()) + tx.GetSenderKey() + tx.GetRecipientKey();
 
+		// Do transaction signiture verification process
 		std::vector<uint8_t> msgBytes = Volt::GetRawString(txData);
 		std::vector<uint8_t> signitureBytes = Volt::ConvertHexToByteData(tx.impl->signiture);
-		ErrorID errorID = ErrorID::NONE;
-		int isValid = 0;
 
-		ECKeyPair pubKey(tx.GetSenderKey(), std::string(), &errorID);
-		auto x = pubKey.GetPublicKeyHex();
-		if (errorID == ErrorID::NONE)
-			errorID = Volt::VerifySHA256Digest(msgBytes, pubKey, signitureBytes, isValid);
+		ECKeyPair pubKey(tx.GetSenderKey(), std::string(), &error);
+		if (!error)
+			error = Volt::VerifySHA256Digest(msgBytes, pubKey, signitureBytes);
 
-		txValid = (bool)std::max(isValid, 0);
-		return errorID;
+		return error;
 	}
 
 	std::string SerializeTransaction(const Transaction& tx)

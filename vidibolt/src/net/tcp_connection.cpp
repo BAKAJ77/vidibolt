@@ -88,7 +88,7 @@ namespace Volt
 			this->socket.close();
 		}
 
-		ErrorID FlushSocket()
+		ErrorCode FlushSocket()
 		{
 			std::vector<uint8_t> transmitBuffer, recieveBuffer;
 			system::error_code errorCodeTransmit, errorCodeRecieve;
@@ -180,7 +180,7 @@ namespace Volt
 		this->impl->CloseSocket();
 	}
 
-	ErrorID Connection::FlushSocket()
+	ErrorCode Connection::FlushSocket()
 	{
 		return this->impl->FlushSocket();
 	}

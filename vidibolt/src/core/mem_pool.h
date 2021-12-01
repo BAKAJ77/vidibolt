@@ -34,7 +34,7 @@ namespace Volt
 			Pushes given transaction into the mempool.
 			Returns an error ID if an error occurs.
 		*/
-		friend extern VOLT_API ErrorID PushTransaction(MemPool& pool, const Transaction& tx);
+		friend extern VOLT_API ErrorCode PushTransaction(MemPool& pool, const Transaction& tx);
 
 		/*
 			Pops specified number of transactions from the mempool queue and returns them as a vector of transactions.

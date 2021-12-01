@@ -22,7 +22,7 @@ namespace Volt
 		Deque<RecievedMessage> inboundMsgs;
 		bool isListening;
 
-		ErrorID listenerErrorState;
+		ErrorCode listenerErrorState;
 	private:
 		/*
 			Callback function which handles error checking and initiation of a connection when one is accepted.
@@ -38,7 +38,7 @@ namespace Volt
 		}
 	public:
 		Implementation(uint32_t port, bool startListener) : port(port), isListening(startListener), 
-			acceptor(ctx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), listenerErrorState(ErrorID::NONE)
+			acceptor(ctx, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 		{
 			if (startListener)
 			{
@@ -74,7 +74,7 @@ namespace Volt
 			this->isListening = false;
 		}
 
-		ErrorID PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut)
+		ErrorCode PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut)
 		{
 			if (this->inboundConnections.ElementExists(recvMsg.connectionID))
 				this->inboundConnections[recvMsg.connectionID]->PushOutboundMessage(msgOut);
@@ -95,14 +95,14 @@ namespace Volt
 			// Flush all inbound connection sockets (aka transmit all outbound messages and recieve all inbound messages)
 			for (size_t i = 0; i < this->inboundConnections.GetSize(); i++)
 			{
-				ErrorID errorID = ErrorID::NONE;
+				ErrorCode error;
 				const ConnectionPtr& connection = this->inboundConnections.GetElementAtIndex(i);
 				if (connection && connection->IsSocketOpen())
-					errorID = connection->FlushSocket();
+					error = connection->FlushSocket();
 
 				// Check for thrown connection errors
-				if (errorID == ErrorID::CONNECTION_RESET_ERROR || errorID == ErrorID::NOT_CONNECTED_ERROR ||
-					errorID == ErrorID::EOF_ERROR)
+				if (error == ErrorID::CONNECTION_RESET_ERROR || error == ErrorID::NOT_CONNECTED_ERROR ||
+					error == ErrorID::EOF_ERROR)
 					connection->CloseSocket();
 			}
 
@@ -130,7 +130,7 @@ namespace Volt
 			return this->isListening;
 		}
 
-		const ErrorID& GetListenerErrorState() const
+		const ErrorCode& GetListenerErrorState() const
 		{
 			return this->listenerErrorState;
 		}
@@ -152,7 +152,7 @@ namespace Volt
 		this->impl->StopListener();
 	}
 
-	ErrorID TCPServer::PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut)
+	ErrorCode TCPServer::PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut)
 	{
 		return this->impl->PushOutboundResponseMessage(recvMsg, msgOut);
 	}
@@ -182,7 +182,7 @@ namespace Volt
 		return this->impl->IsListening(); 
 	}
 
-	const ErrorID& TCPServer::GetListenerErrorState() const 
+	const ErrorCode& TCPServer::GetListenerErrorState() const
 	{ 
 		return this->impl->GetListenerErrorState(); 
 	}

@@ -50,7 +50,7 @@ namespace Volt
 			block.GetTransactions(), block.GetBlockHash());
 	}
 
-	ErrorID Block::GenerateBlockHash(std::string& outputBlockHash) const
+	ErrorCode Block::GenerateBlockHash(std::string& outputBlockHash) const
 	{
 		// Push the data from all transactions in the block into the string
 		std::string combinedTxsData;
@@ -65,8 +65,8 @@ namespace Volt
 
 		// Generate the hash
 		std::vector<uint8_t> rawHashDigest;
-		ErrorID error = Volt::GetSHA256Digest(rawBlockData, rawHashDigest);
-		if (error == ErrorID::NONE)
+		ErrorCode error = Volt::GetSHA256Digest(rawBlockData, rawHashDigest);
+		if (!error)
 			outputBlockHash = Volt::ConvertByteToHexData(rawHashDigest);
 
 		return error;
@@ -102,16 +102,15 @@ namespace Volt
 		return this->impl->txs;
 	}
 
-	ErrorID VerifyBlock(const Block& block, const Chain& chain, bool& blockValid)
+	ErrorCode VerifyBlock(const Block& block, const Chain& chain)
 	{
-		ErrorID error = ErrorID::NONE;
-		blockValid = true;
+		ErrorCode error;
 		
 		// Check that all the transactions contained are valid
 		for (const auto& tx : block.GetTransactions())
 		{
-			error = Volt::VerifyTransaction(tx, blockValid);
-			if ((error != ErrorID::NONE) || (!blockValid))
+			error = Volt::VerifyTransaction(tx);
+			if (error)
 				return error;
 		}
 
@@ -122,32 +121,27 @@ namespace Volt
 		if (block.GetIndex() != 0)
 		{
 			const Block& prevBlock = chain.GetBlockAtIndexHeight(block.GetIndex() - 1);
-			if ((block.GetPreviousBlockHash() != prevBlock.GetBlockHash()) ||
-				(block.GetTimestamp() <= prevBlock.GetTimestamp()) || 
-				(block.GetIndex() != prevBlock.GetIndex() + 1))
-			{
-				blockValid = false;
-				return error;
-			}
+			if (block.GetPreviousBlockHash() != prevBlock.GetBlockHash())
+				return ErrorID::BLOCK_PREVIOUS_HASH_INVALID;
+
+			if (block.GetTimestamp() <= prevBlock.GetTimestamp())
+				return ErrorID::BLOCK_TIMESTAMP_INVALID;
+
+			if (block.GetIndex() != prevBlock.GetIndex() + 1)
+				return ErrorID::BLOCK_INDEX_INVALID;
 		}
 		else
 		{
 			const Block& genesisBlock = chain.GetBlockChain().front();
 			if (genesisBlock != Volt::GetGenesisBlock())
-			{
-				blockValid = false;
-				return error;
-			}
+				return ErrorID::GENESIS_BLOCK_INVALID;
 		}
 
 		// Check that the hash of the block is valid [TODO: SUBJECT TO CHANGE]
 		std::string hash;
 		error = block.GenerateBlockHash(hash);
-		if ((error != ErrorID::NONE) || (block.GetBlockHash() != hash))
-		{
-			blockValid = false;
-			return error;
-		}
+		if (!error && (block.GetBlockHash() != hash))
+			return ErrorID::BLOCK_HASH_INVALID;
 
 		return error;
 	}

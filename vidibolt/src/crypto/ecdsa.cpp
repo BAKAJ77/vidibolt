@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	ECKeyPair::ECKeyPair(ErrorID* error) :
+	ECKeyPair::ECKeyPair(ErrorCode* error) :
 		keyPair(nullptr), keyGenCtx(nullptr)
 	{
 		// Create the key generation context and initialize it
@@ -23,28 +23,32 @@ namespace Volt
 				if (error) 
 					*error = ErrorID::OPERATION_INIT_FAILURE;
 			}
-
-			// Set the parameter generation curve and point compresson form enum, then generate the key pair
-			if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(this->keyGenCtx, NID_secp256k1) <= 0)
-			{
-				if (error) 
-					*error = ErrorID::EC_PARAMGEN_CURVE_ERROR;
-			}
-
-			if (EVP_PKEY_generate(this->keyGenCtx, &this->keyPair) <= 0)
-			{
-				if (error) 
-					*error = ErrorID::ECDSA_KEY_GENERATION_ERROR;
-			}
 			else
 			{
-				EC_KEY* ecKeyPair = EVP_PKEY_get1_EC_KEY(this->keyPair);
-				EC_KEY_set_conv_form(ecKeyPair, POINT_CONVERSION_COMPRESSED);
+				// Set the parameter generation curve and point compresson form enum, then generate the key pair
+				if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(this->keyGenCtx, NID_secp256k1) <= 0)
+				{
+					if (error)
+						*error = ErrorID::EC_PARAMGEN_CURVE_ERROR;
+				}
+				else
+				{
+					if (EVP_PKEY_generate(this->keyGenCtx, &this->keyPair) <= 0)
+					{
+						if (error)
+							*error = ErrorID::ECDSA_KEY_GENERATION_ERROR;
+					}
+					else
+					{
+						EC_KEY* ecKeyPair = EVP_PKEY_get1_EC_KEY(this->keyPair);
+						EC_KEY_set_conv_form(ecKeyPair, POINT_CONVERSION_COMPRESSED);
+					}
+				}
 			}
 		}
 	}
 
-	ECKeyPair::ECKeyPair(const std::string& publicKey, const std::string& privateKey, ErrorID* error) :
+	ECKeyPair::ECKeyPair(const std::string& publicKey, const std::string& privateKey, ErrorCode* error) :
 		keyPair(nullptr), keyGenCtx(nullptr)
 	{
 		// Make sure the public key given was valid 
@@ -79,26 +83,30 @@ namespace Volt
 				if (error) 
 					*error = ErrorID::EC_KEY_GROUP_ASSIGNMENT_FAILURE;
 			}
-
-			if (EC_KEY_set_public_key(ecKeyPair, pubKey) <= 0)
+			else
 			{
-				if (error) 
-					*error = ErrorID::EC_KEY_ASSIGNMENT_FAILURE;
-			}
-
-			if (!privateKey.empty())
-			{
-				BIGNUM* privKey = nullptr;
-
-				BN_hex2bn(&privKey, privKeyStr.c_str());
-				if (EC_KEY_set_private_key(ecKeyPair, privKey) <= 0)
+				if (EC_KEY_set_public_key(ecKeyPair, pubKey) <= 0)
 				{
-					if (error) 
+					if (error)
 						*error = ErrorID::EC_KEY_ASSIGNMENT_FAILURE;
 				}
-			}
+				else
+				{
+					if (!privateKey.empty())
+					{
+						BIGNUM* privKey = nullptr;
 
-			EVP_PKEY_set1_EC_KEY(this->keyPair, ecKeyPair);
+						BN_hex2bn(&privKey, privKeyStr.c_str());
+						if (EC_KEY_set_private_key(ecKeyPair, privKey) <= 0)
+						{
+							if (error)
+								*error = ErrorID::EC_KEY_ASSIGNMENT_FAILURE;
+						}
+					}
+
+					EVP_PKEY_set1_EC_KEY(this->keyPair, ecKeyPair);
+				}
+			}
 		}
 	}
 

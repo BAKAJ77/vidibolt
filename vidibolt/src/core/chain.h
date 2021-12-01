@@ -26,8 +26,8 @@ namespace Volt
 		*/
 		VOLT_API void operator=(const Chain& chain);
 
-		friend extern VOLT_API ErrorID PushBlock(Chain& chain, const Block& block);
-		friend extern VOLT_API ErrorID VerifyChain(const Chain& chain, bool& chainValid);
+		friend extern VOLT_API ErrorCode PushBlock(Chain& chain, const Block& block);
+		friend extern VOLT_API ErrorCode VerifyChain(const Chain& chain);
 
 		VOLT_API const Block& GetLatestBlock() const;
 		VOLT_API const Block& GetBlockAtIndexHeight(uint32_t blockIndex) const;

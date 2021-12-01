@@ -3,7 +3,7 @@
 
 namespace Volt
 {
-	ErrorID GetSHA256Digest(const std::vector<uint8_t>& message, std::vector<uint8_t>& digestOutput)
+	ErrorCode GetSHA256Digest(const std::vector<uint8_t>& message, std::vector<uint8_t>& digestOutput)
 	{
 		// Make sure the message data array isn't empty
 		if (message.empty())
@@ -43,7 +43,7 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
-	ErrorID GetSignedSHA256Digest(const std::vector<uint8_t>& message, const ECKeyPair& key, 
+	ErrorCode GetSignedSHA256Digest(const std::vector<uint8_t>& message, const ECKeyPair& key,
 		std::vector<uint8_t>& signitureDigestOutput)
 	{
 		// Make sure a private key is assigned to the key pair given
@@ -96,8 +96,8 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
-	ErrorID VerifySHA256Digest(const std::vector<uint8_t>& originalMessage, const ECKeyPair& key, 
-		const std::vector<uint8_t>& signiture, int& signitureValid)
+	ErrorCode VerifySHA256Digest(const std::vector<uint8_t>& originalMessage, const ECKeyPair& key,
+		const std::vector<uint8_t>& signiture)
 	{
 		// Make sure a public key is assigned to the key pair given
 		if (!key.HasPublicKey())
@@ -123,9 +123,11 @@ namespace Volt
 		if (EVP_DigestVerifyUpdate(digestSignVerifyCtx, originalMessage.data(), originalMessage.size() * sizeof(uint8_t)) <= 0)
 			return ErrorID::DIGEST_UPDATE_FAILURE;
 
-		signitureValid = EVP_DigestVerifyFinal(digestSignVerifyCtx, signiture.data(), signiture.size());
+		int signitureValid = EVP_DigestVerifyFinal(digestSignVerifyCtx, signiture.data(), signiture.size());
 		if (signitureValid < 0)
 			return ErrorID::DIGEST_OPERATION_FAILURE;
+		else if (signitureValid == 0)
+			return ErrorID::SIGNITURE_INVALID;
 
 		// Free allocated resources
 		EVP_MD_CTX_free(digestSignVerifyCtx);

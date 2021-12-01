@@ -27,7 +27,7 @@ namespace Volt
 			this->Disconnect();
 		}
 
-		ErrorID Connect(const std::string& address)
+		ErrorCode Connect(const std::string& address)
 		{
 			// Setup connection shared pointer object, then resolve endpoints
 			ConnectionPtr connection = Volt::CreateConnection(this->inboundMsgs);
@@ -57,13 +57,13 @@ namespace Volt
 				this->outboundConnection->PushOutboundMessage(msg);
 		}
 
-		ErrorID UpdateState()
+		ErrorCode UpdateState()
 		{
-			ErrorID error = ErrorID::NONE;
+			ErrorCode error;
 			if (this->outboundConnection)
 			{
 				error = this->outboundConnection->FlushSocket();
-				if (error != ErrorID::NONE)
+				if (error)
 					this->outboundConnection.reset();
 			}
 			else
@@ -89,7 +89,7 @@ namespace Volt
 
 	TCPClient::~TCPClient() = default;
 
-	ErrorID TCPClient::Connect(const std::string& address)
+	ErrorCode TCPClient::Connect(const std::string& address)
 	{
 		return this->impl->Connect(address);
 	}
@@ -104,7 +104,7 @@ namespace Volt
 		this->impl->PushOutboundMessage(msg);
 	}
 
-	ErrorID TCPClient::UpdateState() 
+	ErrorCode TCPClient::UpdateState()
 	{ 
 		return this->impl->UpdateState();
 	}

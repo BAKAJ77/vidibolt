@@ -1,12 +1,14 @@
 #ifndef VIDIBOLT_ERROR_IDENTIFIER_H
 #define VIDIBOLT_ERROR_IDENTIFIER_H
 
+#include <util/volt_api.h>
+
 namespace Volt
 {
 	/*
 		Enumeration that represents the type of error that occured within the execution of a function.
 	*/
-	enum class ErrorID : int
+	enum class ErrorID : uint32_t
 	{
 		NONE = 0,
 
@@ -16,9 +18,11 @@ namespace Volt
 		TRANSACTION_AMOUNT_INVALID = 20002,
 		TRANSACTION_KEY_NOT_SPECIFIED = 20003,
 		TRANSACTION_EXPIRED = 20004,
-		TRANSACTION_SIGNITURE_INVALID = 20005,
-		BLOCK_OBSOLETE = 20006,
-		BLOCK_INVALID = 20007,
+		BLOCK_PREVIOUS_HASH_INVALID = 20005,
+		BLOCK_TIMESTAMP_INVALID = 20006,
+		BLOCK_INDEX_INVALID = 20007,
+		GENESIS_BLOCK_INVALID = 20008,
+		BLOCK_HASH_INVALID = 20009,
 
 		// OpenSSL related error codes
 		MESSAGE_EMPTY = 40000,
@@ -35,7 +39,8 @@ namespace Volt
 		ECDSA_KEY_PAIR_ERROR = 40011,
 		ECDSA_KEY_GENERATION_ERROR = 40012,
 		EC_PARAMGEN_CURVE_ERROR = 40013,
-		
+		SIGNITURE_INVALID = 40014,
+
 		// ASIO error codes
 		EOF_ERROR = 2,
 		ACCESS_DENIED_ERROR = 10013,
@@ -71,6 +76,32 @@ namespace Volt
 		TIMED_OUT_ERROR = 10060,
 		TRY_AGAIN_ERROR = 1237,
 		WOULD_BLOCK_ERROR = 10035
+	};
+
+	struct ErrorCode
+	{
+	public:
+		ErrorID code;
+	public:
+		VOLT_API ErrorCode();
+		VOLT_API ErrorCode(ErrorID code);
+
+		VOLT_API ~ErrorCode();
+
+		/*
+			Operator overload for assignment of an error code value.
+		*/
+		VOLT_API void operator=(ErrorCode code);
+
+		/*
+			Typecast overload for conversions from ErrorCode to a boolean value.
+		*/
+		VOLT_API operator bool() const;
+
+		/*
+			Typecast overload for conversions from ErrorCode to a ErrorID value.
+		*/
+		VOLT_API operator ErrorID() const;
 	};
 }
 

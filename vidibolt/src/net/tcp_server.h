@@ -39,7 +39,7 @@ namespace Volt
 		/*
 			Pushes a message to be transmitted through the connection which the recieved message came from.
 		*/
-		VOLT_API ErrorID PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut);
+		VOLT_API ErrorCode PushOutboundResponseMessage(const RecievedMessage& recvMsg, const Message& msgOut);
 
 		/*
 			Pushes a message to be transmitted to all open connections in the queue.
@@ -67,9 +67,9 @@ namespace Volt
 		VOLT_API bool IsListening() const;
 
 		/*
-			Returns enum value indicating if an error (relating to the listening operation) has occured.
+			Returns an error code indicating whether an error (relating to the listening operation) has occured.
 		*/
-		VOLT_API const ErrorID& GetListenerErrorState() const;
+		VOLT_API const ErrorCode& GetListenerErrorState() const;
 	};
 }
 

@@ -34,16 +34,18 @@ namespace Volt
 		VOLT_API void operator=(const Block& block);
 
 		/*
-			Checks if the block specified is valid or not, the validity of the block is returned via the 'blockValid' parameter.
-			Returns error ID if an error occurs.
+			Checks if the block specified is valid or not.
+
+			If the block is valid then the value of the error code returned will be 'ErrorID::NONE', else
+			other possible error codes will be returned on failure.
 		*/
-		friend extern VOLT_API ErrorID VerifyBlock(const Block& block, const Chain& chain, bool& blockValid);
+		friend extern VOLT_API ErrorCode VerifyBlock(const Block& block, const Chain& chain);
 
 		/*
 			Generates the hash of the block based on its contents. 
 			Returns error ID if an error occurs.
 		*/
-		VOLT_API ErrorID GenerateBlockHash(std::string& outputBlockHash) const;
+		VOLT_API ErrorCode GenerateBlockHash(std::string& outputBlockHash) const;
 
 		/*
 			Returns the index of the block.

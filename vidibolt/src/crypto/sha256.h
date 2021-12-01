@@ -12,19 +12,20 @@ namespace Volt
 	/*
 		Returns resulting hash byte data from the SHA256 digest operation.
 	*/
-	extern VOLT_API ErrorID GetSHA256Digest(const std::vector<uint8_t>& message, std::vector<uint8_t>& digestOutput);
+	extern VOLT_API ErrorCode GetSHA256Digest(const std::vector<uint8_t>& message, std::vector<uint8_t>& digestOutput);
 
 	/*
 		Returns resulting signiture byte data from the SHA256 digest signing operation.
 	*/
-	extern VOLT_API ErrorID GetSignedSHA256Digest(const std::vector<uint8_t>& message, const ECKeyPair& key,
+	extern VOLT_API ErrorCode GetSignedSHA256Digest(const std::vector<uint8_t>& message, const ECKeyPair& key,
 		std::vector<uint8_t>& signitureDigestOutput);
 
 	/*
-		Returns 1 if the signiture is valid, else if it't not then 0 is returned.
+		Returns an error code with a value of 'ErrorID::NONE' if the signiture was valid, else other
+		possible error codes are returned on failure.
 	*/
-	extern VOLT_API ErrorID VerifySHA256Digest(const std::vector<uint8_t>& originalMessage, const ECKeyPair& key,
-		const std::vector<uint8_t>& signiture, int& signitureValid);
+	extern VOLT_API ErrorCode VerifySHA256Digest(const std::vector<uint8_t>& originalMessage, const ECKeyPair& key,
+		const std::vector<uint8_t>& signiture);
 }
 
 #endif

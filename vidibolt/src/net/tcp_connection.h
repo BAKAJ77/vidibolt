@@ -44,7 +44,7 @@ namespace Volt
 			ErrorID::NONE is returned if no error occurs, else an specific error enum value will be returned based
 			on the error that occurred;
 		*/
-		VOLT_API ErrorID FlushSocket();
+		VOLT_API ErrorCode FlushSocket();
 
 		/*
 			Returns the socket which the connection is established through.

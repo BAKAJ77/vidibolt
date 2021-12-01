@@ -35,7 +35,7 @@ namespace Volt
 		this->impl = std::make_unique<Implementation>(pool.impl->pendingTxs);
 	}
 
-	ErrorID PushTransaction(MemPool& pool, const Transaction& tx)
+	ErrorCode PushTransaction(MemPool& pool, const Transaction& tx)
 	{
 		// Check if transaction is already in the mem pool
 		// If it is then return error
@@ -61,11 +61,9 @@ namespace Volt
 			return ErrorID::TRANSACTION_EXPIRED;
 
 		// The signiture of the transaction must be valid
-		bool signitureValid;
-		Volt::VerifyTransaction(tx, signitureValid);
-
-		if (!signitureValid)
-			return ErrorID::TRANSACTION_SIGNITURE_INVALID;
+		ErrorCode error = Volt::VerifyTransaction(tx);
+		if (error)
+			return error;
 
 		// [TODO]: THIS FUNCTION WILL TAKE A EXTRA PARAM 'const Chain&' TO CHECK IF THE BALANCE
 		// OF SENDER IS SUFFICIENT FOR TRANSACTION.

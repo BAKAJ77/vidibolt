@@ -36,17 +36,17 @@ namespace Volt
 
 		/*
 			Signs the transaction with the private key given.
-			An ErrorID is returned if an error occurs.
+			An error code is returned if an error occurs.
 		*/
-		friend extern VOLT_API ErrorID SignTransaction(Transaction& tx, const ECKeyPair& privKey);
+		friend extern VOLT_API ErrorCode SignTransaction(Transaction& tx, const ECKeyPair& privKey);
 
 		/*
-			Checks whether the transaction's signiture is valid. The result is returned via the 'txValid' reference parameter.
-			'txValid' is set to TRUE if the signiture is valid, else it's set to FALSE.
+			Checks whether the transaction's signiture is valid.
 
-			Also an ErrorID is returned if an error occurs.
+			If the transaction is valid then the value of the error code returned will be 'ErrorID::NONE', else
+			other possible error codes will be returned on failure.
 		*/
-		friend extern VOLT_API ErrorID VerifyTransaction(const Transaction& tx, bool& txValid);
+		friend extern VOLT_API ErrorCode VerifyTransaction(const Transaction& tx);
 
 		/*
 			Returns string containing the transaction data that has been serialized into a JSON format.

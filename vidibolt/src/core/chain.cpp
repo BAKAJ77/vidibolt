@@ -66,7 +66,7 @@ namespace Volt
 		return (uint32_t)std::max(this->impl->blockChain.size() - 1, (size_t)0);
 	}
 
-	ErrorID PushBlock(Chain& chain, const Block& block)
+	ErrorCode PushBlock(Chain& chain, const Block& block)
 	{
 		// The block must be valid for it to be appended to the chain, so we check if it is before appending it to the chain.
 		// 
@@ -77,34 +77,25 @@ namespace Volt
 		// - The index of the block must be equal to the previous block's index + 1.
 		// - The hash of the block must be valid.
 
-		bool blockValid;
-		ErrorID error = Volt::VerifyBlock(block, chain, blockValid);
-		if (error != ErrorID::NONE)
-			return error;
-		else if (!blockValid)
-			return ErrorID::BLOCK_INVALID;
+		ErrorCode error = Volt::VerifyBlock(block, chain);
+		if (!error)
+			chain.impl->blockChain.emplace_back(block);
 
-		chain.impl->blockChain.emplace_back(block);
-		return ErrorID::NONE;
+		return error;
 	}
 
-	ErrorID VerifyChain(const Chain& chain, bool& chainValid)
+	ErrorCode VerifyChain(const Chain& chain)
 	{
 		for (size_t i = 0; i < chain.impl->blockChain.size(); i++)
 		{
 			const Block& block = chain.impl->blockChain[i];
 
 			// Check that the block is valid
-			bool blockValid;
-			ErrorID error = Volt::VerifyBlock(block, chain, blockValid);
-			if ((error != ErrorID::NONE) || (!blockValid))
-			{
-				chainValid = false;
+			ErrorCode error = Volt::VerifyBlock(block, chain);
+			if (error)
 				return error;
-			}
 		}
 
-		chainValid = true;
 		return ErrorID::NONE;
 	}
 }

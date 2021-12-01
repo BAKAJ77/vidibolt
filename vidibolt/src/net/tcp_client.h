@@ -30,7 +30,7 @@ namespace Volt
 		/*
 			Connects to server-side of peer with the ipv4 address specified.
 		*/
-		VOLT_API ErrorID Connect(const std::string& address);
+		VOLT_API ErrorCode Connect(const std::string& address);
 
 		/*
 			Closes the currently open connection.
@@ -45,7 +45,7 @@ namespace Volt
 		/*
 			Transmits all pending messages and recieves all pending incoming messages.
 		*/
-		VOLT_API ErrorID UpdateState();
+		VOLT_API ErrorCode UpdateState();
 
 		/*
 			Returns a queue of recieved messages.
