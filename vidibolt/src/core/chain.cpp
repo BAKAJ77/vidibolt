@@ -61,6 +61,23 @@ namespace Volt
 		return this->impl->blockChain;
 	}
 
+	uint64_t Chain::GetAddressBalance(const std::string& publicKey) const
+	{
+		uint64_t balance = 0;
+		for (const auto& block : this->impl->blockChain)
+		{
+			for (const auto& tx : block.GetTransactions())
+			{
+				if (publicKey == tx.GetSenderKey())
+					balance -= tx.GetAmount();
+				else if (publicKey == tx.GetRecipientKey())
+					balance += tx.GetAmount();
+			}
+		}
+
+		return balance;
+	}
+
 	uint32_t Chain::GetLatestBlockHeight() const
 	{
 		// Make sure value returned is never less than 0

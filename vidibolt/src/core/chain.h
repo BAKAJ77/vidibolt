@@ -43,6 +43,9 @@ namespace Volt
 		// Returns a vector array of the entire stored blockchain.
 		VOLT_API const std::vector<Block>& GetBlockChain() const;
 
+		// Returns the amount of coins currently being held by a public key address
+		VOLT_API uint64_t GetAddressBalance(const std::string& publicKey) const;
+
 		// Returns the height index of the latest block in the chain.
 		VOLT_API uint32_t GetLatestBlockHeight() const;
 	};

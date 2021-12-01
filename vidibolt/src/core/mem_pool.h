@@ -10,6 +10,8 @@
 
 namespace Volt
 {
+	class Chain;
+
 	// A class for containing pending transactions.
 	class MemPool
 	{
@@ -28,7 +30,7 @@ namespace Volt
 
 		// Pushes given transaction into the mempool.
 		// An error code is returned in the event of a failure occurring.
-		friend extern VOLT_API ErrorCode PushTransaction(MemPool& pool, const Transaction& tx);
+		friend extern VOLT_API ErrorCode PushTransaction(MemPool& pool, const Transaction& tx, const Chain& chain);
 
 		// Pops specified number of transactions from the mempool queue and returns them as a vector of transactions.
 		// Note that the specified number of transactions may not be popped if there is less pending transactions

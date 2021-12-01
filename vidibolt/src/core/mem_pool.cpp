@@ -1,4 +1,5 @@
 #include <core/mem_pool.h>
+#include <core/chain.h>
 #include <util/timestamp.h>
 
 namespace Volt
@@ -35,7 +36,7 @@ namespace Volt
 		this->impl = std::make_unique<Implementation>(pool.impl->pendingTxs);
 	}
 
-	ErrorCode PushTransaction(MemPool& pool, const Transaction& tx)
+	ErrorCode PushTransaction(MemPool& pool, const Transaction& tx, const Chain& chain)
 	{
 		// Check if transaction is already in the mem pool
 		// If it is then return error
@@ -54,8 +55,9 @@ namespace Volt
 		if (tx.GetSenderKey().empty() || tx.GetRecipientKey().empty())
 			return ErrorID::TRANSACTION_KEY_NOT_SPECIFIED;
 
-		// [TODO]: THIS FUNCTION WILL TAKE A EXTRA PARAM 'const Chain&' TO CHECK IF THE BALANCE
-		// OF SENDER IS SUFFICIENT FOR TRANSACTION.
+		// The sender must have a sufficient balance to execute transaction
+		if (chain.GetAddressBalance(tx.GetSenderKey()) < tx.GetAmount())
+			return ErrorID::TRANSACTION_SENDER_BALANCE_INSUFFICIENT;
 
 		// The transaction timestamp must be within 10 mins of current time
 		// or the transaction is written off as expired
