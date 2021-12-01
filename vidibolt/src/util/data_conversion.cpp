@@ -1,6 +1,8 @@
 #include <util/data_conversion.h>
+
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 namespace Volt
 {
@@ -19,8 +21,8 @@ namespace Volt
 			{
 				if (hex[i + j] >= '0' && hex[i + j] <= '9')
 					deneryChar += (unsigned char)((hex[i + j] - '0') << leftShiftAmt);
-				else if (hex[i + j] >= 'a' && hex[i + j] <= 'f')
-					deneryChar += (unsigned char)((10 + (hex[i + j] - 'a')) << leftShiftAmt);
+				else if (hex[i + j] >= 'A' && hex[i + j] <= 'F')
+					deneryChar += (unsigned char)((10 + (hex[i + j] - 'A')) << leftShiftAmt);
 
 				leftShiftAmt -= 4;
 			}
@@ -37,7 +39,11 @@ namespace Volt
 		for (uint32_t i = 0; i < bytes.size(); i++)
 			ss << std::hex << std::setw(2) << std::setfill('0') << (int)bytes[i];
 
-		return ss.str();
+		// Convert hex to upper case format
+		std::string hex = ss.str();
+		std::transform(hex.begin(), hex.end(), hex.begin(), ::toupper);
+
+		return hex;
 	}
 
 	std::vector<uint8_t> GetRawString(const std::string& str)

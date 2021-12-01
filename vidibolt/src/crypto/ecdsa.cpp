@@ -53,7 +53,7 @@ namespace Volt
 	{
 		// Make sure the public key given was valid 
 		// Note that while a private key must be given, the private key isn't necessary
-		if (publicKey.substr(0, 4) != "vpk_")
+		if (publicKey.substr(0, 4) != "VPK_")
 		{
 			if (error) 
 				*error = ErrorID::ECDSA_PUBLIC_KEY_INVALID;
@@ -63,7 +63,7 @@ namespace Volt
 			// Transform all the characters in the public key hex string to UPPERCASE
 			std::string pubKeyStr = publicKey, privKeyStr = privateKey;
 
-			pubKeyStr.erase(pubKeyStr.begin(), pubKeyStr.begin() + 4); // also remove "vpk_" prefix in public key string
+			pubKeyStr.erase(pubKeyStr.begin(), pubKeyStr.begin() + 4); // also remove "VPK_" prefix in public key string
 			std::transform(pubKeyStr.begin(), pubKeyStr.end(), pubKeyStr.begin(), ::toupper);
 
 			// Transform all the characters in the private key hex string to UPPERCASE (if a private key was given)
@@ -130,9 +130,7 @@ namespace Volt
 		{
 			// Convert the EC_POINT* public key to a hexadecimal format
 			std::string publicKeyHex = EC_POINT_point2hex(group, publicKey, pointConversion, nullptr);
-			std::transform(publicKeyHex.begin(), publicKeyHex.end(), publicKeyHex.begin(), ::tolower);
-
-			return  "vpk_" + publicKeyHex;
+			return  "VPK_" + publicKeyHex;
 		}
 
 		return std::string();
@@ -148,8 +146,6 @@ namespace Volt
 		{
 			// Convert the BIGNUM* private key to a hexadecimal format
 			std::string privateKeyHex = BN_bn2hex(privateKey);
-			std::transform(privateKeyHex.begin(), privateKeyHex.end(), privateKeyHex.begin(), ::tolower);
-
 			return privateKeyHex;
 		}
 
