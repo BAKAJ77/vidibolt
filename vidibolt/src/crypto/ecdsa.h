@@ -14,13 +14,14 @@ namespace Volt
 	// This class handles generation and storage of EC key pairs.
 	class VOLT_API ECKeyPair
 	{
+	private:
+		EVP_PKEY_CTX* keyGenCtx;
+		EVP_PKEY* keyPair;
+	private:
 		friend VOLT_API ErrorCode GetSignedSHA256Digest(const std::vector<uint8_t>& message, const ECKeyPair& key,
 			std::vector<uint8_t>& signitureDigestOutput);
 		friend VOLT_API ErrorCode VerifySHA256Digest(const std::vector<uint8_t>& originalMessage, const ECKeyPair& key,
 			const std::vector<uint8_t>& signiture);
-	private:
-		EVP_PKEY_CTX* keyGenCtx;
-		EVP_PKEY* keyPair;
 	public:
 		// Call this constructor if you want a public and private key to be generated automatically.
 		// Also, errors can be caught through passing a pointer to a ErrorCode object via the only parameter 'error'.
