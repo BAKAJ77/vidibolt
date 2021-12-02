@@ -144,7 +144,7 @@ namespace Volt
 				return ErrorID::GENESIS_BLOCK_INVALID;
 		}
 
-		// Check that the hash of the block is valid [TODO: SUBJECT TO CHANGE]
+		// Check that the hash of the block is valid
 		std::string hash;
 		ErrorCode error = block.GenerateBlockHash(hash);
 		if (error)
@@ -159,6 +159,20 @@ namespace Volt
 
 		if (block.GetBlockHash() != Volt::ConvertByteToHexData(finalHashBuffer))
 			return ErrorID::BLOCK_HASH_INVALID;
+
+		// Check that the hash satisfies the difficulty of the block
+		bool difficultyOK = true;
+		for (size_t i = 0; i < block.GetDifficulty(); i++)
+		{
+			if (hash[i] != '0')
+			{
+				difficultyOK = false;
+				break;
+			}
+		}
+
+		if (!difficultyOK)
+			return ErrorID::BLOCK_HASH_DIFFICULTY_INSUFFICIENT;
 
 		return ErrorID::NONE;
 	}
