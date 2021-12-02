@@ -78,6 +78,15 @@ namespace Volt
 		return balance;
 	}
 
+	double Chain::GetMiningRewardAmount() const
+	{
+		constexpr double base = 75, decreaseFactor = 1.5;
+		constexpr int decreaseRate = 3435000; // Decrease mining reward by the decrease factor every 3,435,000 blocks
+		const int epochs = (int)(this->GetLatestBlockHeight() + 1) / decreaseRate;
+
+		return std::max(base / std::pow(decreaseFactor, epochs), 0.3);
+	}
+
 	uint32_t Chain::GetLatestBlockHeight() const
 	{
 		// Make sure value returned is never less than 0

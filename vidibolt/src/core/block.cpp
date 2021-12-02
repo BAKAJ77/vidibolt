@@ -208,7 +208,7 @@ namespace Volt
 			totalFees += tx.GetFee();
 
 		Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX), 
-			VOLT_MINING_REWARD + totalFees, 0, Volt::GetTimeSinceEpoch(), "", minerPublicKey.GetPublicKeyHex());
+			chain.GetMiningRewardAmount() + totalFees, 0, Volt::GetTimeSinceEpoch(), "", minerPublicKey.GetPublicKeyHex());
 
 		txs.emplace_back(tx);
 

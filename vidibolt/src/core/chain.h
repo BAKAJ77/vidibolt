@@ -47,6 +47,9 @@ namespace Volt
 		// Returns the amount of coins currently being held by a public key address
 		VOLT_API double GetAddressBalance(const ECKeyPair& publicKey) const;
 
+		// Returns the current mining reward amount.
+		VOLT_API double GetMiningRewardAmount() const;
+
 		// Returns the height index of the latest block in the chain.
 		VOLT_API uint32_t GetLatestBlockHeight() const;
 	};
