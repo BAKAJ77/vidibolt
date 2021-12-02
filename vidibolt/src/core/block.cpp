@@ -1,6 +1,7 @@
 #include <core/block.h>
-#include <core/mem_pool.h>
 #include <core/chain.h>
+#include <core/mem_pool.h>
+#include <core/hash_stats.h>
 #include <crypto/sha256.h>
 #include <util/random_generation.h>
 #include <util/timestamp.h>
@@ -177,7 +178,7 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
-	ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain, uint64_t difficulty, 
+	ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain, uint64_t difficulty,
 		const ECKeyPair& minerPublicKey, std::function<bool(const Transaction&)> txHandler)
 	{
 		// Get the latest block in the chain and get transactions to be included into the block
@@ -207,7 +208,7 @@ namespace Volt
 		for (const auto& tx : txs)
 			totalFees += tx.GetFee();
 
-		Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX), 
+		Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX),
 			chain.GetMiningRewardAmount() + totalFees, 0, Volt::GetTimeSinceEpoch(), "", minerPublicKey.GetPublicKeyHex());
 
 		txs.emplace_back(tx);
@@ -218,6 +219,8 @@ namespace Volt
 		// Start doing proof-of-work (find a hash that satisfies the block difficulty)
 		std::string generatedHash;
 		bool hashValid = false;
+		
+		Volt::StartHashRateRecord(minedBlock.GetNonce()); // Start recording the current hash rate
 
 		while (!hashValid)
 		{
@@ -242,6 +245,8 @@ namespace Volt
 				minedBlock.impl->nonce++;
 		}
 
+		Volt::EndHashRateRecord(); // Do calculations to get the final recorded hash rate
+
 		// Assign the current timestamp to the block
 		minedBlock.impl->timestamp = Volt::GetTimeSinceEpoch();
 
@@ -252,7 +257,7 @@ namespace Volt
 		ErrorCode error = Volt::GetSHA256Digest(buffer, finalHashBuffer);
 		if (error)
 			return error;
-		
+
 		// Finally, assign the final generated hash to the block
 		minedBlock.impl->hash = Volt::ConvertByteToHexData(finalHashBuffer);
 		return ErrorID::NONE;
