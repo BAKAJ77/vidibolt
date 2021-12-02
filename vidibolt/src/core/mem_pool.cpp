@@ -66,7 +66,7 @@ namespace Volt
 		if (keyPairError)
 			return keyPairError;
 
-		if (chain.GetAddressBalance(publicKey) < tx.GetAmount())
+		if (chain.GetAddressBalance(publicKey) < (tx.GetAmount() + tx.GetFee()))
 			return ErrorID::TRANSACTION_SENDER_BALANCE_INSUFFICIENT;
 
 		// The transaction timestamp must be within 10 mins of current time

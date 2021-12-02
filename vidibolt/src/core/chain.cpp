@@ -69,7 +69,7 @@ namespace Volt
 			for (const auto& tx : block.GetTransactions())
 			{
 				if (publicKey.GetPublicKeyHex() == tx.GetSenderKey())
-					balance -= tx.GetAmount();
+					balance -= (tx.GetAmount() + tx.GetFee());
 				else if (publicKey.GetPublicKeyHex() == tx.GetRecipientKey())
 					balance += tx.GetAmount();
 			}

@@ -29,7 +29,7 @@ namespace Volt
 	public:
 		VOLT_API Transaction();
 		VOLT_API Transaction(const Transaction& tx);
-		VOLT_API Transaction(TransactionType type, uint64_t id, double amount, uint64_t timestamp, 
+		VOLT_API Transaction(TransactionType type, uint64_t id, double amount, double fee, uint64_t timestamp, 
 			const std::string& senderPK, const std::string& recipientPK, const std::string& signiture = "");
 
 		VOLT_API ~Transaction();
@@ -68,6 +68,9 @@ namespace Volt
 
 		// Returns the amount tranferred in the transaction.
 		VOLT_API const double& GetAmount() const;
+
+		// Returns the fee amount paid in the transaction.
+		VOLT_API const double& GetFee() const;
 
 		// Returns the timestamp of the transaction.
 		VOLT_API const uint64_t& GetTimestamp() const;

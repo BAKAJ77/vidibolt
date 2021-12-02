@@ -11,17 +11,17 @@ namespace Volt
 	public:
 		TransactionType type;
 		uint64_t id, timestamp;
-		double amount;
+		double amount, fee;
 
 		std::string senderPK, recipientPK, signiture;
 	public:
 		Implementation() :
-			type(TransactionType::TRANSFER), id(0), amount(0), timestamp(0)
+			type(TransactionType::TRANSFER), id(0), amount(0), timestamp(0), fee(0)
 		{}
 
-		Implementation(TransactionType type, uint64_t id, double amount, uint64_t timestamp, const std::string& senderPK,
-			const std::string& recipientPK, const std::string& signiture) :
-			type(type), id(id), amount(amount), timestamp(timestamp), senderPK(senderPK), recipientPK(recipientPK), 
+		Implementation(TransactionType type, uint64_t id, double amount, double fee, uint64_t timestamp, 
+			const std::string& senderPK, const std::string& recipientPK, const std::string& signiture) :
+			type(type), id(id), amount(amount), fee(fee), timestamp(timestamp), senderPK(senderPK), recipientPK(recipientPK), 
 			signiture(signiture)
 		{}
 
@@ -35,20 +35,20 @@ namespace Volt
 	{}
 
 	Transaction::Transaction(const Transaction& tx) :
-		impl(std::make_unique<Implementation>(tx.GetType(), tx.GetID(), tx.GetAmount(), tx.GetTimestamp(), tx.GetSenderKey(),
-			tx.GetRecipientKey(), tx.GetSigniture()))
+		impl(std::make_unique<Implementation>(tx.GetType(), tx.GetID(), tx.GetAmount(), tx.GetFee(), tx.GetTimestamp(), 
+			tx.GetSenderKey(), tx.GetRecipientKey(), tx.GetSigniture()))
 	{}
 
-	Transaction::Transaction(TransactionType type, uint64_t id, double amount, uint64_t timestamp, 
+	Transaction::Transaction(TransactionType type, uint64_t id, double amount, double fee, uint64_t timestamp, 
 		const std::string& senderPK, const std::string& recipientPK, const std::string& signiture) :
-		impl(std::make_unique<Implementation>(type, id, amount, timestamp, senderPK, recipientPK, signiture))
+		impl(std::make_unique<Implementation>(type, id, amount, fee, timestamp, senderPK, recipientPK, signiture))
 	{}
 
 	Transaction::~Transaction() = default;
 
 	void Transaction::operator=(const Transaction& tx)
 	{
-		this->impl = std::make_unique<Implementation>(tx.GetType(), tx.GetID(), tx.GetAmount(), tx.GetTimestamp(), 
+		this->impl = std::make_unique<Implementation>(tx.GetType(), tx.GetID(), tx.GetAmount(), tx.GetFee(), tx.GetTimestamp(), 
 			tx.GetSenderKey(), tx.GetRecipientKey(), tx.GetSigniture());
 	}
 
@@ -65,6 +65,11 @@ namespace Volt
 	const double& Transaction::GetAmount() const
 	{
 		return this->impl->amount;
+	}
+
+	const double& Transaction::GetFee() const
+	{
+		return this->impl->fee;
 	}
 
 	const uint64_t& Transaction::GetTimestamp() const
@@ -141,6 +146,7 @@ namespace Volt
 			{ "sender", tx.impl->senderPK },
 			{ "recipient", tx.impl->recipientPK },
 			{ "amount", tx.impl->amount },
+			{ "fee", tx.impl->fee },
 			{ "timestamp", tx.impl->timestamp },
 			{ "signiture", tx.impl->signiture }
 		};
@@ -154,6 +160,7 @@ namespace Volt
 			(TransactionType)json::value_to<uint32_t>(obj.at("type")),
 			json::value_to<uint64_t>(obj.at("id")),
 			json::value_to<double>(obj.at("amount")),
+			json::value_to<double>(obj.at("fee")),
 			json::value_to<uint64_t>(obj.at("timestamp")),
 			json::value_to<std::string>(obj.at("sender")),
 			json::value_to<std::string>(obj.at("recipient")),
@@ -172,6 +179,7 @@ namespace Volt
 		return lhs.GetType() == rhs.GetType() &&
 			lhs.GetID() == rhs.GetID() &&
 			lhs.GetAmount() == rhs.GetAmount() &&
+			lhs.GetFee() == rhs.GetFee() &&
 			lhs.GetTimestamp() == rhs.GetTimestamp() &&
 			lhs.GetSenderKey() == rhs.GetSenderKey() &&
 			lhs.GetRecipientKey() == rhs.GetRecipientKey() &&

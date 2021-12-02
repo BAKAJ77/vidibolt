@@ -187,9 +187,14 @@ namespace Volt
 		else // No custom handler function was given, so just get the transactions at the front of queue in the mempool
 			txs = Volt::PopTransactions(pool, VOLT_MAX_TRANSACTIONS_PER_BLOCK);
 
-		// Add mining reward transaction for the miner to the block
-		Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX), VOLT_MINING_REWARD, 0,
-			Volt::GetTimeSinceEpoch(), "", minerPublicKey.GetPublicKeyHex());
+		// Add mining reward transaction for the miner to the block 
+		// The mining reward also includes the collected fees paid by the senders of the transactions in the block
+		double totalFees = 0;
+		for (const auto& tx : txs)
+			totalFees += tx.GetFee();
+
+		Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX), 
+			VOLT_MINING_REWARD + totalFees, 0, Volt::GetTimeSinceEpoch(), "", minerPublicKey.GetPublicKeyHex());
 
 		txs.emplace_back(tx);
 
