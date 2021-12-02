@@ -37,14 +37,13 @@ namespace Volt
 		friend extern VOLT_API ErrorCode VerifyBlock(const Block& block, const Chain& chain);
 
 		// Fills the block with transactions from the mempool then does proof-of-work to validate the block.
-		// Once the block is validated, it is added to the chain.
+		// The successfully mined block is returned via the second parameter 'minedBlock'.
 		// 
 		// Transactions picked can be customised by passing a function via the last parameter 'txHandler',
 		// when the passed function returns TRUE then the transaction is added to the block.
-		// Also, the mined block is returned via the second parameter 'minedBlock'.
 		// 
 		// An error code is returned in the event of a failure occurring.
-		friend extern VOLT_API ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, Chain& chain,
+		friend extern VOLT_API ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain,
 			uint64_t difficulty, const ECKeyPair& minerPublicKey, std::function<bool(const Transaction&)> txHandler = nullptr);
 
 		// Generates the hash of the block based on its contents. 

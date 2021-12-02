@@ -163,7 +163,7 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
-	ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, Chain& chain, uint64_t difficulty, 
+	ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain, uint64_t difficulty, 
 		const ECKeyPair& minerPublicKey, std::function<bool(const Transaction&)> txHandler)
 	{
 		// Get the latest block in the chain and get transactions to be included into the block
@@ -188,7 +188,7 @@ namespace Volt
 			txs = Volt::PopTransactions(pool, VOLT_MAX_TRANSACTIONS_PER_BLOCK);
 
 		// Add mining reward transaction for the miner to the block
-		Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX), VOLT_MINING_REWARD,
+		Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX), VOLT_MINING_REWARD, 0,
 			Volt::GetTimeSinceEpoch(), "", minerPublicKey.GetPublicKeyHex());
 
 		txs.emplace_back(tx);
@@ -234,11 +234,9 @@ namespace Volt
 		if (error)
 			return error;
 		
-		// Finally, assign the final generated hash to the block then append it to the chain
+		// Finally, assign the final generated hash to the block
 		minedBlock.impl->hash = Volt::ConvertByteToHexData(finalHashBuffer);
-		error = Volt::PushBlock(chain, minedBlock);
-
-		return error;
+		return ErrorID::NONE;
 	}
 
 	Block GetGenesisBlock()
