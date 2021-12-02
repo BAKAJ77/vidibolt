@@ -1,6 +1,7 @@
 #include <core/mem_pool.h>
 #include <core/chain.h>
 #include <util/timestamp.h>
+#include <util/random_generation.h>
 
 namespace Volt
 {
@@ -41,7 +42,7 @@ namespace Volt
 		return (uint32_t)this->impl->pendingTxs.GetSize();
 	}
 
-	ErrorCode PushTransaction(MemPool& pool, const Transaction& tx, const Chain& chain)
+	ErrorCode PushTransaction(MemPool& pool, const Chain& chain, const Transaction& tx)
 	{
 		// Check if transaction is already in the mem pool
 		// If it is then return error
@@ -83,6 +84,24 @@ namespace Volt
 		// The transaction has been deduced as valid so add it to mempool
 		pool.impl->pendingTxs.PushBackElement(tx);
 		return ErrorID::NONE;
+	}
+
+	ErrorCode PushTransaction(MemPool& pool, const Chain& chain, TransactionType type, double amount, double fee, 
+		const ECKeyPair& senderKeyPair, const ECKeyPair& recipientPublicKey)
+	{
+		if (!senderKeyPair.HasPrivateKey())
+			return ErrorID::ECDSA_PRIVATE_KEY_REQUIRED;
+
+		// Initialize the transaction object
+		Transaction tx(type, Volt::GenerateRandomUint64(0, UINT64_MAX), amount, fee, Volt::GetTimeSinceEpoch(),
+			senderKeyPair.GetPublicKeyHex(), recipientPublicKey.GetPublicKeyHex());
+		
+		// Sign the transaction then attempt to push transaction into the mempool
+		ErrorCode error = Volt::SignTransaction(tx, senderKeyPair);
+		if (!error)
+			error = Volt::PushTransaction(pool, chain, tx);
+
+		return error;
 	}
 
 	Transaction PopTransactionAtIndex(MemPool& pool, size_t index)

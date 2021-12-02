@@ -30,7 +30,13 @@ namespace Volt
 
 		// Pushes given transaction into the mempool.
 		// An error code is returned in the event of a failure occurring.
-		friend extern VOLT_API ErrorCode PushTransaction(MemPool& pool, const Transaction& tx, const Chain& chain);
+		friend extern VOLT_API ErrorCode PushTransaction(MemPool& pool, const Chain& chain, const Transaction& tx);
+
+		// Pushes given transaction into the mempool.
+		// The key pair passed through the parameter 'senderKeyPair' must have both the public and private key of the sender.
+		// An error code is returned in the event of a failure occurring.
+		friend extern VOLT_API ErrorCode PushTransaction(MemPool& pool, const Chain& chain, TransactionType type,
+			double amount, double fee, const ECKeyPair& senderKeyPair, const ECKeyPair& recipientPublicKey);
 
 		// Pops the transaction at the specified index in the queue from the mempool then returns it.
 		friend extern VOLT_API Transaction PopTransactionAtIndex(MemPool& pool, size_t index);
