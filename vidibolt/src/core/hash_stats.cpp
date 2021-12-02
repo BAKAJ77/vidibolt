@@ -40,6 +40,7 @@ namespace Volt
 
 	double GetCurrentHashesPerSecond()
 	{
+		std::scoped_lock lock(Global::mutex);
 		return Global::currentHashesPerSecond;
 	}
 }
