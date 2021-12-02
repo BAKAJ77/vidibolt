@@ -89,8 +89,7 @@ namespace Volt
 
 	uint32_t Chain::GetLatestBlockHeight() const
 	{
-		// Make sure value returned is never less than 0
-		return (uint32_t)std::max(this->impl->blockChain.size() - 1, (size_t)0);
+		return (uint32_t)this->impl->blockChain.size();
 	}
 
 	ErrorCode PushBlock(Chain& chain, const Block& block)
@@ -113,6 +112,10 @@ namespace Volt
 
 	ErrorCode VerifyChain(const Chain& chain)
 	{
+		// There must be a genesis block in the chain
+		if (chain.GetLatestBlockHeight() < 1)
+			return ErrorID::CHAIN_EMPTY;
+
 		for (size_t i = 0; i < chain.impl->blockChain.size(); i++)
 		{
 			const Block& block = chain.impl->blockChain[i];
