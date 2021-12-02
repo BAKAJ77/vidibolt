@@ -1,48 +1,65 @@
 #include <crypto/ecdsa.h>
-#include <core/mem_pool.h>
 #include <core/block.h>
 #include <core/chain.h>
+#include <core/mem_pool.h>
+#include <core/hash_stats.h>
 #include <util/timestamp.h>
+#include <crypto/sha256.h>
 
 #include <iostream>
 
 int main(int argc, char** argv)
 {
-	// Generate the EC key
-	Volt::ErrorCode keyGenError;
-
+	std::vector<double> recordedhashRates;
+	Volt::ErrorCode keyGenError, miningError, chainAppendError, txError, txMempoolError, chainError;
+	
+	// Init 2 keypairs, manually create a keypair and generate a new keypair
 	Volt::ECKeyPair keyPair("VPK_022102EEFF84CBD0D70BA47E778E451D7A38F2E6AA2E885692DCEB731377F6F18F", 
 		"0B42DACF5D7B8B825FBB4543298601359FB27A8D85147F3235F0DAA140553DD6", &keyGenError);
 	Volt::ECKeyPair keyPair2(&keyGenError);
 
-	// Transaction and Mempool related stuff
+	// Blockchain related stuff
 	Volt::Chain chain;
 	Volt::MemPool memPool;
+	Volt::Block block;
 
-	Volt::Transaction tx = { 4000, 800, Volt::GetTimeSinceEpoch(), keyPair.GetPublicKeyHex(), keyPair2.GetPublicKeyHex() };
-	Volt::Transaction tx2 = { 4283, 500, Volt::GetTimeSinceEpoch(), keyPair2.GetPublicKeyHex(), keyPair.GetPublicKeyHex() };
-	Volt::SignTransaction(tx, keyPair);
-	Volt::SignTransaction(tx2, keyPair2);
+	// Mine 2 blocks and append them to the chain
+	miningError = Volt::MineNextBlock(memPool, block, chain, 2, keyPair);
+	chainAppendError = Volt::PushBlock(chain, block);
 
-	Volt::PushTransaction(memPool, tx, chain);
-	Volt::PushTransaction(memPool, tx2, chain);
+	recordedhashRates.emplace_back(Volt::GetCurrentHashesPerSecond());
 
-	auto& txs = Volt::PopTransactions(memPool, VOLT_MAX_TRANSACTIONS_PER_BLOCK);
-	Volt::ErrorCode txError = Volt::VerifyTransaction(tx);
+	miningError = Volt::MineNextBlock(memPool, block, chain, 2, keyPair);
+	chainAppendError = Volt::PushBlock(chain, block);
 
-	std::cout << (!txError ? "true" : "false") << std::endl;
-	std::cout << tx << std::endl;
-	std::cin.get();
+	recordedhashRates.emplace_back(Volt::GetCurrentHashesPerSecond());
 
+	// Create a transaction and push the transaction to the mempool
+	txError = Volt::PushTransaction(memPool, chain, 100, 20, keyPair, keyPair2);
+	
+	// Mine 3rd block
+	miningError = Volt::MineNextBlock(memPool, block, chain, 2, keyPair2, [](const Volt::Transaction& tx) { return true; });
+	chainAppendError = Volt::PushBlock(chain, block);
 
-	// Block and Chain related stuff
-	Volt::Block block(1, chain.GetLatestBlock().GetBlockHash(), {}, 
-		"E466A10B4F6B01E738087CED3250814C309981B0F3B104A0D138987D7F8B525A", 1638318978);
+	recordedhashRates.emplace_back(Volt::GetCurrentHashesPerSecond());
 
-	Volt::ErrorCode blockError = Volt::PushBlock(chain, block);
-	Volt::ErrorCode chainError = Volt::VerifyChain(chain);
+	// Print the average of the hash rates recorded
+	double total = 0;
+	for (const auto& hashRate : recordedhashRates)
+		total += hashRate;
 
-	std::cout << (!chainError ? "true" : "false") << std::endl;
+	std::cout << "Average Hash Rate: " << (total / recordedhashRates.size()) << " H/s\n\n";
+
+	// Print out the balance of public key addresses
+	std::cout << "| " << keyPair.GetPublicKeyHex() << " | Balance: " << chain.GetAddressBalance(keyPair) << std::endl;
+	std::cout << "| " << keyPair2.GetPublicKeyHex() << " | Balance: " << chain.GetAddressBalance(keyPair2) << std::endl;
+
+	// Print the current block height of the chain
+	std::cout << "Current Block Height: " << chain.GetLatestBlockHeight() << std::endl;
+
+	// Verify the chain
+	chainError = Volt::VerifyChain(chain);
+	std::cout << "Is Chain Valid: " << (!chainError ? "Yes" : "No") << std::endl << std::endl;
 
 	std::system("pause");
 	return 0;
