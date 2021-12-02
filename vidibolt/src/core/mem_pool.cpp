@@ -86,15 +86,15 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
-	ErrorCode PushTransaction(MemPool& pool, const Chain& chain, TransactionType type, double amount, double fee, 
-		const ECKeyPair& senderKeyPair, const ECKeyPair& recipientPublicKey)
+	ErrorCode PushTransaction(MemPool& pool, const Chain& chain, double amount, double fee, const ECKeyPair& senderKeyPair, 
+		const ECKeyPair& recipientPublicKey)
 	{
 		if (!senderKeyPair.HasPrivateKey())
 			return ErrorID::ECDSA_PRIVATE_KEY_REQUIRED;
 
 		// Initialize the transaction object
-		Transaction tx(type, Volt::GenerateRandomUint64(0, UINT64_MAX), amount, fee, Volt::GetTimeSinceEpoch(),
-			senderKeyPair.GetPublicKeyHex(), recipientPublicKey.GetPublicKeyHex());
+		Transaction tx(TransactionType::TRANSFER, Volt::GenerateRandomUint64(0, UINT64_MAX), amount, fee,
+			Volt::GetTimeSinceEpoch(), senderKeyPair.GetPublicKeyHex(), recipientPublicKey.GetPublicKeyHex());
 		
 		// Sign the transaction then attempt to push transaction into the mempool
 		ErrorCode error = Volt::SignTransaction(tx, senderKeyPair);
