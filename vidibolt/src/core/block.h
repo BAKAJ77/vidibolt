@@ -36,6 +36,15 @@ namespace Volt
 		// other possible error codes will be returned depending on the type of failure that occurred.
 		friend extern VOLT_API ErrorCode VerifyBlock(const Block& block, const Chain& chain);
 
+		// Creates a new block and fills it with transactions fetched from the mempool, the created block is then returned.
+		// Note that this function does NOT perform any proof-of-work on the block, it only creates and initializes it with
+		// data.
+		// 
+		// Also, note that the mining reward will only be inserted into the block if the miner public key is provided, 
+		// if it's not provided then no mining reward transaction will be included in the block.
+		friend extern VOLT_API Block CreateBlock(MemPool& pool, const Chain& chain, uint64_t difficulty,
+			const ECKeyPair* minerPublicKey = nullptr, std::function<bool(const Transaction&)> txHandler = nullptr);
+
 		// Fills the block with transactions from the mempool then does proof-of-work to validate the block.
 		// The successfully mined block is returned via the second parameter 'minedBlock'.
 		// 
@@ -45,6 +54,21 @@ namespace Volt
 		// An error code is returned in the event of a failure occurring.
 		friend extern VOLT_API ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain,
 			uint64_t difficulty, const ECKeyPair& minerPublicKey, std::function<bool(const Transaction&)> txHandler = nullptr);
+
+		// Only does proof-of-work on the block assuming that the block data has already been initialized (this should be
+		// done via the CreateBlock() method).
+		// 
+		// The fifth and sixth parameter ('nonceStart' and 'nonceEnd' respectively) are for specifying at which nonce the
+		// mining of the block should start and where it should end e.g. if we set 'nonceStart' to 50 and 'nonceEnd' to 100,
+		// generation of hashes for the block will start at an initial nonce value of 50 then the generation of hashes will
+		// end when either a hash satisfying the difficulty is found or when the nonce value reaches a value of 100.
+		// 
+		// The block passed via 'block' will be modified with the block hash and timestamp being assigned if 
+		// a valid hash is successfully found.
+		// 
+		// An error code is returned in the event of a failure occurring.
+		friend extern VOLT_API ErrorCode MineNextBlock(Block& block, const Chain& chain, uint64_t difficulty, 
+			uint64_t nonceStart = 0, uint64_t nonceEnd = UINT64_MAX);
 
 		// Generates the hash of the block based on its contents. 
 		// An error code is returned in the event of a failure occurring.

@@ -178,8 +178,8 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
-	ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain, uint64_t difficulty,
-		const ECKeyPair& minerPublicKey, std::function<bool(const Transaction&)> txHandler)
+	Block CreateBlock(MemPool& pool, const Chain& chain, uint64_t difficulty, const ECKeyPair* minerPublicKey,
+		std::function<bool(const Transaction&)> txHandler)
 	{
 		// Get the latest block in the chain and get transactions to be included into the block
 		const Block& latestBlock = chain.GetLatestBlock();
@@ -202,19 +202,30 @@ namespace Volt
 		else // No custom handler function was given, so just get the transactions at the front of queue in the mempool
 			txs = Volt::PopTransactions(pool, VOLT_MAX_TRANSACTIONS_PER_BLOCK);
 
+		Block block(latestBlock.GetIndex() + 1, latestBlock.GetBlockHash(), txs, difficulty);
+
 		// Add mining reward transaction for the miner to the block 
 		// The mining reward also includes the collected fees paid by the senders of the transactions in the block
-		double totalFees = 0;
-		for (const auto& tx : txs)
-			totalFees += tx.GetFee();
+		if (minerPublicKey)
+		{
+			double totalFees = 0;
+			for (const auto& tx : block.GetTransactions())
+				totalFees += tx.GetFee();
 
-		Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX),
-			chain.GetMiningRewardAmount() + totalFees, 0, Volt::GetTimeSinceEpoch(), "", minerPublicKey.GetPublicKeyHex());
+			Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX),
+				chain.GetMiningRewardAmount() + totalFees, 0, Volt::GetTimeSinceEpoch(), "", 
+				minerPublicKey->GetPublicKeyHex());
 
-		txs.emplace_back(tx);
+			block.impl->txs.emplace_back(tx);
+		}
 
-		// Initialize the block
-		minedBlock = { latestBlock.GetIndex() + 1, latestBlock.GetBlockHash(), txs, difficulty };
+		return block;
+	}
+
+	ErrorCode MineNextBlock(MemPool& pool, Block& minedBlock, const Chain& chain, uint64_t difficulty,
+		const ECKeyPair& minerPublicKey, std::function<bool(const Transaction&)> txHandler)
+	{
+		minedBlock = Volt::CreateBlock(pool, chain, difficulty, &minerPublicKey, txHandler);
 
 		// Start doing proof-of-work (find a hash that satisfies the block difficulty)
 		std::string generatedHash;
@@ -260,6 +271,67 @@ namespace Volt
 
 		// Finally, assign the final generated hash to the block
 		minedBlock.impl->hash = Volt::ConvertByteToHexData(finalHashBuffer);
+		return ErrorID::NONE;
+	}
+
+	ErrorCode MineNextBlock(Block& block, const Chain& chain, uint64_t difficulty, uint64_t nonceStart, 
+		uint64_t nonceEnd)
+	{
+		// Make sure that the min 
+		if (nonceStart > nonceEnd)
+			return ErrorID::NONCE_MIN_LARGER_THAN_NONCE_MAX;
+
+		// Start doing proof-of-work (find a hash that satisfies the block difficulty)
+		std::string generatedHash;
+		bool hashValid = false;
+
+		Volt::StartHashRateRecord(block.GetNonce()); // Start recording the current hash rate
+		block.impl->nonce = nonceStart;
+
+		while (!hashValid && (block.GetNonce() <= nonceEnd))
+		{
+			// Generate a new hash
+			ErrorCode error = block.GenerateBlockHash(generatedHash);
+			if (error)
+				return error;
+
+			// Check if the hash is valid
+			hashValid = true;
+			for (size_t i = 0; i < difficulty; i++)
+			{
+				if (generatedHash[i] != '0')
+				{
+					hashValid = false;
+					break;
+				}
+			}
+
+			// Increment the nonce value if the generated hash doesn't satisfy the block difficulty
+			if (!hashValid)
+				block.impl->nonce++;
+		}
+
+		Volt::EndHashRateRecord(); // Do calculations to get the final recorded hash rate
+
+		if (hashValid)
+		{
+			// Assign the current timestamp to the block
+			block.impl->timestamp = Volt::GetTimeSinceEpoch();
+
+			// Get the hash of the generated hash combined with the timestamp
+			const std::string hashInput = generatedHash + std::to_string(block.GetTimestamp());
+			std::vector<uint8_t> buffer = Volt::GetRawString(hashInput), finalHashBuffer;
+
+			ErrorCode error = Volt::GetSHA256Digest(buffer, finalHashBuffer);
+			if (error)
+				return error;
+
+			// Finally, assign the final generated hash to the block
+			block.impl->hash = Volt::ConvertByteToHexData(finalHashBuffer);
+		}
+		else
+			return ErrorID::NO_HASH_SOLUTION_FOUND_IN_NONCE_RANGE;
+
 		return ErrorID::NONE;
 	}
 
