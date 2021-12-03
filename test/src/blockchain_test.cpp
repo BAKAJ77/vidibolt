@@ -37,8 +37,9 @@ int main(int argc, char** argv)
 	// Create a transaction and push the transaction to the mempool
 	txError = Volt::PushTransaction(memPool, chain, 100, 20, keyPair, keyPair2);
 	
-	// Mine 3rd block
-	miningError = Volt::MineNextBlock(memPool, block, chain, 2, keyPair2, [](const Volt::Transaction& tx) { return true; });
+	// Mine 3rd block (this time we will use a different method to mine the block)
+	block = Volt::CreateBlock(memPool, chain, 2, &keyPair2, [](const Volt::Transaction& tx) { return true; });
+	miningError = Volt::MineNextBlock(block, chain, 2);
 	chainAppendError = Volt::PushBlock(chain, block);
 
 	recordedhashRates.emplace_back(Volt::GetCurrentHashesPerSecond());
