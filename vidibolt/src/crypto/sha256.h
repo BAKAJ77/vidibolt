@@ -1,6 +1,8 @@
 #ifndef VIDIBOLT_SHA256_H
 #define VIDIBOLT_SHA256_H
 
+#define SHA_256_DIGEST_LENGTH_HEX 64
+
 #include <util/data_conversion.h>
 #include <util/error_identifier.h>
 #include <util/volt_api.h>
