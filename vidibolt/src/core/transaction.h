@@ -26,11 +26,18 @@ namespace Volt
 	private:
 		class Implementation;
 		std::unique_ptr<Implementation> impl;
+	private:
+		// Returns a string containing all the transaction data appended together.
+		std::string GetTransactionDataStr() const;
+
+		// Generates the hash of the transaction.
+		ErrorCode GenerateTxHash();
 	public:
 		VOLT_API Transaction();
 		VOLT_API Transaction(const Transaction& tx);
 		VOLT_API Transaction(TransactionType type, uint64_t id, double amount, double fee, uint64_t timestamp, 
-			const std::string& senderPK, const std::string& recipientPK, const std::string& signiture = "");
+			const std::string& senderPK, const std::string& recipientPK, ErrorCode* error = nullptr, 
+			const std::string& signiture = "", const std::string& txHash = "");
 
 		VOLT_API ~Transaction();
 
@@ -83,6 +90,9 @@ namespace Volt
 
 		// Returns the signiture of the transaction.
 		VOLT_API const std::string& GetSigniture() const;
+
+		// Returns the transaction's hash.
+		VOLT_API const std::string& GetTxHash() const;
 	};
 
 	// Operator overload for checking if both the transaction on the left and right hand side are equal.

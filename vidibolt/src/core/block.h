@@ -67,8 +67,7 @@ namespace Volt
 		// a valid hash is successfully found.
 		// 
 		// An error code is returned in the event of a failure occurring.
-		friend extern VOLT_API ErrorCode MineNextBlock(Block& block, uint64_t difficulty, uint64_t nonceStart = 0, 
-			uint64_t nonceEnd = UINT64_MAX);
+		friend extern VOLT_API ErrorCode MineNextBlock(Block& block, uint64_t nonceStart = 0, uint64_t nonceEnd = UINT64_MAX);
 
 		// Generates the hash of the block based on its contents. 
 		// An error code is returned in the event of a failure occurring.

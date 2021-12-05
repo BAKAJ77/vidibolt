@@ -274,7 +274,7 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
-	ErrorCode MineNextBlock(Block& block, uint64_t difficulty, uint64_t nonceStart, uint64_t nonceEnd)
+	ErrorCode MineNextBlock(Block& block, uint64_t nonceStart, uint64_t nonceEnd)
 	{
 		// Make sure that the min 
 		if (nonceStart > nonceEnd)
@@ -296,7 +296,7 @@ namespace Volt
 
 			// Check if the hash is valid
 			hashValid = true;
-			for (size_t i = 0; i < difficulty; i++)
+			for (size_t i = 0; i < block.GetDifficulty(); i++)
 			{
 				if (generatedHash[i] != '0')
 				{

@@ -35,6 +35,12 @@ namespace Volt
 		// other possible error codes will be returned depending on the type of failure that occurred.
 		friend extern VOLT_API ErrorCode VerifyChain(const Chain& chain);
 
+		// Looks through the block chain for the transaction with the given transaction hash.
+		// If a transaction is found, it is returned via the second parameter 'returnedTx'.
+		// An error code is returned if something goes wrong e.g. the transaction not being found etc.
+		friend extern VOLT_API ErrorCode FindTransaction(const Chain& chain, const std::string& txHash, 
+			Transaction& returnedTx);
+
 		// Returns the latest block in the chain.
 		VOLT_API const Block& GetLatestBlock() const;
 

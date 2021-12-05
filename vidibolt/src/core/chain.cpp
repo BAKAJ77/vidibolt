@@ -1,4 +1,5 @@
 #include <core/chain.h>
+#include <crypto/sha256.h>
 #include <cassert>
 
 namespace Volt
@@ -134,5 +135,34 @@ namespace Volt
 		}
 
 		return ErrorID::NONE;
+	}
+
+	ErrorCode FindTransaction(const Chain& chain, const std::string& txHash, Transaction& returnedTx)
+	{
+		// Extract timestamp from the transaction hash string
+		const std::string timestampHex = txHash.substr(SHA_256_DIGEST_LENGTH_HEX, txHash.size() - SHA_256_DIGEST_LENGTH_HEX);
+		uint64_t timestamp = Volt::ConvertHexToUint(timestampHex);
+
+		// Attempt to find the transaction matching the hash given
+		for (uint32_t blockIndex = 0; blockIndex < chain.impl->blockChain.GetSize(); blockIndex++)
+		{
+			const Block& block = chain.impl->blockChain.GetElement(blockIndex);
+
+			// No point searching through blocks that were created before the transaction was.
+			// So we skip blocks that existed before the transaction did.
+			if (block.GetTimestamp() >= timestamp)
+			{
+				for (const auto& tx : block.GetTransactions())
+				{
+					if (txHash == tx.GetTxHash())
+					{
+						returnedTx = tx;
+						return ErrorID::NONE;
+					}
+				}
+			}
+		}
+
+		return ErrorID::TRANSACTION_NOT_FOUND_IN_CHAIN;
 	}
 }
