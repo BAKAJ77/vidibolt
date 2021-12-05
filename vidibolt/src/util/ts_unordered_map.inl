@@ -7,12 +7,12 @@ namespace Volt
 	{}
 
 	template <typename Key, typename Ty> UnorderedMap<Key, Ty>::UnorderedMap(const UnorderedMap<Key, Ty>& other) :
-		impl(std::make_unique<Implementation<Key, Ty>>(other.map))
+		impl(std::make_unique<Implementation<Key, Ty>>(*other.impl))
 	{}
 
 	template <typename Key, typename Ty> void UnorderedMap<Key, Ty>::operator=(const UnorderedMap<Key, Ty>& other)
 	{
-		this->impl = std::make_unique<Implementation<Key, Ty>>(other.map);
+		this->impl = std::make_unique<Implementation<Key, Ty>>(*other.impl);
 	}
 
 	template <typename Key, typename Ty> void UnorderedMap<Key, Ty>::Reserve(size_t count)
