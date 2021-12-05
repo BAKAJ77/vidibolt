@@ -46,6 +46,19 @@ namespace Volt
 		return hex;
 	}
 
+	std::string ConvertUintToHex(const uint64_t& num)
+	{
+		std::stringstream hexStream;
+		hexStream << std::hex << std::setw(2) << std::setfill('0') << num;
+
+		return hexStream.str();
+	}
+
+	uint64_t ConvertHexToUint(const std::string& hex)
+	{
+		return std::stoull(hex, nullptr, 16);
+	}
+
 	std::vector<uint8_t> GetRawString(const std::string& str)
 	{
 		std::vector<uint8_t> rawStringData;
