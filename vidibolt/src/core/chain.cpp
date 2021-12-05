@@ -1,23 +1,28 @@
 #include <core/chain.h>
+#include <cassert>
 
 namespace Volt
 {
 	class Chain::Implementation
 	{
 	public:
-		std::vector<Block> blockChain;
+		UnorderedMap<uint32_t, Block> blockChain;
 	public:
-		Implementation() :
-			blockChain({ Volt::GetGenesisBlock() })
-		{};
+		Implementation()
+		{
+			const Block genesis = Volt::GetGenesisBlock();
+			this->blockChain.Insert(genesis.GetIndex(), genesis);
+		};
 
 		Implementation(const Implementation& impl) :
 			blockChain(impl.blockChain)
 		{}
 
-		Implementation(const std::vector<Block>& blockChain) :
+		Implementation(const UnorderedMap<uint32_t, Block>& blockChain) :
 			blockChain(blockChain)
-		{}
+		{
+			assert(!blockChain.IsEmpty()); // The blockchain must always have at least a genesis block in it
+		}
 
 		~Implementation() = default;
 
@@ -35,7 +40,7 @@ namespace Volt
 		impl(std::make_unique<Implementation>(*chain.impl))
 	{}
 
-	Chain::Chain(const std::vector<Block>& blockChain) :
+	Chain::Chain(const UnorderedMap<uint32_t, Block>& blockChain) :
 		impl(std::make_unique<Implementation>(blockChain))
 	{}
 
@@ -48,15 +53,15 @@ namespace Volt
 
 	const Block& Chain::GetLatestBlock() const
 	{
-		return this->impl->blockChain.back();
+		return this->impl->blockChain.GetElement(this->GetLatestBlockHeight());
 	}
 
 	const Block& Chain::GetBlockAtIndexHeight(uint32_t blockIndex) const
 	{
-		return this->impl->blockChain[blockIndex];
+		return this->impl->blockChain.GetElement(blockIndex);
 	}
 
-	const std::vector<Block>& Chain::GetBlockChain() const
+	const UnorderedMap<uint32_t, Block>& Chain::GetBlockChain() const
 	{
 		return this->impl->blockChain;
 	}
@@ -64,8 +69,10 @@ namespace Volt
 	double Chain::GetAddressBalance(const ECKeyPair& publicKey) const
 	{
 		double balance = 0;
-		for (const auto& block : this->impl->blockChain)
+		for (uint32_t blockIndex = 0; blockIndex < this->impl->blockChain.GetSize(); blockIndex++)
 		{
+			const Block& block = this->impl->blockChain.GetElement(blockIndex);
+
 			for (const auto& tx : block.GetTransactions())
 			{
 				if (publicKey.GetPublicKeyHex() == tx.GetSenderKey())
@@ -89,7 +96,7 @@ namespace Volt
 
 	uint32_t Chain::GetLatestBlockHeight() const
 	{
-		return (uint32_t)this->impl->blockChain.size();
+		return (uint32_t)(this->impl->blockChain.GetSize() - 1);
 	}
 
 	ErrorCode PushBlock(Chain& chain, const Block& block)
@@ -105,7 +112,7 @@ namespace Volt
 
 		ErrorCode error = Volt::VerifyBlock(block, chain);
 		if (!error)
-			chain.impl->blockChain.emplace_back(block);
+			chain.impl->blockChain.Insert(block.GetIndex(), block);
 
 		return error;
 	}
@@ -116,9 +123,9 @@ namespace Volt
 		if (chain.GetLatestBlockHeight() < 1)
 			return ErrorID::CHAIN_EMPTY;
 
-		for (size_t i = 0; i < chain.impl->blockChain.size(); i++)
+		for (size_t blockIndex = 0; blockIndex < chain.impl->blockChain.GetSize(); blockIndex++)
 		{
-			const Block& block = chain.impl->blockChain[i];
+			const Block& block = chain.impl->blockChain.GetElement((uint32_t)blockIndex);
 
 			// Check that the block is valid
 			ErrorCode error = Volt::VerifyBlock(block, chain);

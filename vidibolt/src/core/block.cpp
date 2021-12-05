@@ -140,7 +140,7 @@ namespace Volt
 		}
 		else
 		{
-			const Block& genesisBlock = chain.GetBlockChain().front();
+			const Block& genesisBlock = chain.GetBlockChain().GetElement(0);
 			if (genesisBlock != Volt::GetGenesisBlock())
 				return ErrorID::GENESIS_BLOCK_INVALID;
 		}
@@ -274,8 +274,7 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
-	ErrorCode MineNextBlock(Block& block, const Chain& chain, uint64_t difficulty, uint64_t nonceStart, 
-		uint64_t nonceEnd)
+	ErrorCode MineNextBlock(Block& block, uint64_t difficulty, uint64_t nonceStart, uint64_t nonceEnd)
 	{
 		// Make sure that the min 
 		if (nonceStart > nonceEnd)

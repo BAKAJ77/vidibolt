@@ -2,10 +2,10 @@
 #define VIDIBOLT_CORE_CHAIN_H
 
 #include <util/volt_api.h>
+#include <util/ts_unordered_map.h>
 #include <crypto/ecdsa.h>
 #include <core/block.h>
 
-#include <vector>
 #include <memory>
 
 namespace Volt
@@ -19,7 +19,7 @@ namespace Volt
 	public:
 		VOLT_API Chain();
 		VOLT_API Chain(const Chain& chain);
-		VOLT_API Chain(const std::vector<Block>& blockChain);
+		VOLT_API Chain(const UnorderedMap<uint32_t, Block>& blockChain);
 
 		VOLT_API ~Chain();
 
@@ -42,7 +42,7 @@ namespace Volt
 		VOLT_API const Block& GetBlockAtIndexHeight(uint32_t blockIndex) const;
 
 		// Returns a vector array of the entire stored blockchain.
-		VOLT_API const std::vector<Block>& GetBlockChain() const;
+		VOLT_API const UnorderedMap<uint32_t, Block>& GetBlockChain() const;
 
 		// Returns the amount of coins currently being held by a public key address
 		VOLT_API double GetAddressBalance(const ECKeyPair& publicKey) const;
