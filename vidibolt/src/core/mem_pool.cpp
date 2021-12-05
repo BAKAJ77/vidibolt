@@ -87,7 +87,7 @@ namespace Volt
 	}
 
 	ErrorCode PushTransaction(MemPool& pool, const Chain& chain, double amount, double fee, const ECKeyPair& senderKeyPair, 
-		const ECKeyPair& recipientPublicKey)
+		const ECKeyPair& recipientPublicKey, std::string* txHash)
 	{
 		if (!senderKeyPair.HasPrivateKey())
 			return ErrorID::ECDSA_PRIVATE_KEY_REQUIRED;
@@ -100,6 +100,10 @@ namespace Volt
 		ErrorCode error = Volt::SignTransaction(tx, senderKeyPair);
 		if (!error)
 			error = Volt::PushTransaction(pool, chain, tx);
+
+		// Return the transaction hash if successful
+		if (!error && txHash)
+			*txHash = tx.GetTxHash();
 
 		return error;
 	}
