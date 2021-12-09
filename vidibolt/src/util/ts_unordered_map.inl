@@ -10,6 +10,11 @@ namespace Volt
 		impl(std::make_unique<Implementation<Key, Ty>>(*other.impl))
 	{}
 
+	template<typename Key, typename Ty>
+	UnorderedMap<Key, Ty>::UnorderedMap(const std::unordered_map<Key, Ty>& map) :
+		impl(std::make_unique<Implementation<Key, Ty>>(map))
+	{}
+
 	template <typename Key, typename Ty> void UnorderedMap<Key, Ty>::operator=(const UnorderedMap<Key, Ty>& other)
 	{
 		this->impl = std::make_unique<Implementation<Key, Ty>>(*other.impl);
@@ -83,5 +88,11 @@ namespace Volt
 	template <typename Key, typename Ty> const Ty& UnorderedMap<Key, Ty>::operator[](const Key& key) const
 	{
 		return (*this->impl)[key];
+	}
+
+	template<typename Key, typename Ty>
+	const std::unordered_map<Key, Ty>& UnorderedMap<Key, Ty>::GetUnorderedMapObject() const
+	{
+		return this->impl->GetUnorderedMapObject();
 	}
 }

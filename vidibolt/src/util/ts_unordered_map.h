@@ -23,6 +23,10 @@ namespace Volt
 				map(other.map)
 			{}
 
+			Implementation(const std::unordered_map<K, T>& map) :
+				map(map)
+			{}
+
 			~Implementation() = default;
 
 			void operator=(const Implementation<K, T>& other)
@@ -119,12 +123,19 @@ namespace Volt
 				std::scoped_lock lock(this->mutex);
 				return this->map[key];
 			}
+
+			const std::unordered_map<K, T>& GetUnorderedMapObject() const
+			{
+				std::scoped_lock lock(this->mutex);
+				return this->map;
+			}
 		};
 
 		std::unique_ptr<Implementation<Key, Ty>> impl;
 	public:
 		VOLT_EXPORT UnorderedMap();
 		VOLT_EXPORT UnorderedMap(const UnorderedMap<Key, Ty>& other);
+		VOLT_EXPORT UnorderedMap(const std::unordered_map<Key, Ty>& map);
 
 		VOLT_EXPORT ~UnorderedMap() = default;
 
@@ -171,6 +182,9 @@ namespace Volt
 
 		// Operator overload that returns the element that has a key matching the one specified.
 		VOLT_EXPORT const Ty& operator[](const Key& key) const;
+
+		// Returns the underlying unordered map object that is wrapped by the class
+		VOLT_EXPORT const std::unordered_map<Key, Ty>& GetUnorderedMapObject() const;
 	};
 }
 

@@ -25,6 +25,10 @@ namespace Volt
 				deque(other.deque)
 			{}
 
+			Implementation(const std::deque<U>& deque) :
+				deque(deque)
+			{}
+
 			~Implementation() = default;
 
 			void operator=(const Implementation<U>& other)
@@ -118,6 +122,7 @@ namespace Volt
 	public:
 		VOLT_EXPORT Deque();
 		VOLT_EXPORT Deque(const Deque<T>& other);
+		VOLT_EXPORT Deque(const std::deque<T>& deque);
 
 		VOLT_EXPORT ~Deque() = default;
 
@@ -160,7 +165,7 @@ namespace Volt
 		VOLT_EXPORT const T& operator[](size_t index) const;
 
 		// Returns the underlying deque object that is wrapped by the class
-		VOLT_EXPORT std::deque<T>& GetDequeObject();
+		VOLT_EXPORT const std::deque<T>& GetDequeObject() const;
 	};
 }
 

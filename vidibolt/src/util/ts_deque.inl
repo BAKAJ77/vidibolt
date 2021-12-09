@@ -10,6 +10,11 @@ namespace Volt
 		impl(std::make_unique<Implementation<T>>(*other.impl))
 	{}
 
+	template<typename T>
+	Deque<T>::Deque(const std::deque<T>& deque) :
+		impl(std::make_unique<Implementation<T>>(deque))
+	{}
+
 	template <typename T> void Deque<T>::operator=(const Deque<T>& other)
 	{
 		this->impl = std::make_unique<Implementation<T>>(*other.impl);
@@ -66,7 +71,7 @@ namespace Volt
 	}
 
 	template<typename T>
-	std::deque<T>& Deque<T>::GetDequeObject()
+	const std::deque<T>& Deque<T>::GetDequeObject() const
 	{
 		return this->impl->GetDequeObject();
 	}
