@@ -65,6 +65,12 @@ namespace Volt
 		return this->impl->GetSize();
 	}
 
+	template<typename T>
+	std::deque<T>& Deque<T>::GetDequeObject()
+	{
+		return this->impl->GetDequeObject();
+	}
+
 	template <typename T> T& Deque<T>::operator[](size_t index)
 	{
 		return (*this->impl)[index];

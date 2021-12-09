@@ -158,6 +158,9 @@ namespace Volt
 
 		// Operator overload that returns the element at the index specified.
 		VOLT_EXPORT const T& operator[](size_t index) const;
+
+		// Returns the underlying deque object that is wrapped by the class
+		VOLT_EXPORT std::deque<T>& GetDequeObject();
 	};
 }
 
