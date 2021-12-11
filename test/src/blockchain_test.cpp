@@ -35,32 +35,45 @@ int main(int argc, char** argv)
 	recordedhashRates.emplace_back(Volt::GetCurrentHashesPerSecond());
 
 	// Create a transaction and push the transaction to the mempool
-	txError = Volt::PushTransaction(memPool, chain, 100, 20, keyPair, keyPair2);
+	std::string txHash;
+	txError = Volt::PushTransaction(memPool, chain, 100, 20, keyPair, keyPair2, &txHash);
 	
 	// Mine 3rd block (this time we will use a different method to mine the block)
 	block = Volt::CreateBlock(memPool, chain, 2, &keyPair2, [](const Volt::Transaction& tx) { return true; });
-	miningError = Volt::MineNextBlock(block, chain, 2);
+	miningError = Volt::MineNextBlock(block);
 	chainAppendError = Volt::PushBlock(chain, block);
 
 	recordedhashRates.emplace_back(Volt::GetCurrentHashesPerSecond());
+
+	// Lookup our recent transaction in the chain, then print it to console
+	Volt::Transaction retrievedTx;
+	Volt::ErrorCode txLookupError = Volt::FindTransaction(chain, txHash, retrievedTx);
+
+	if (!txLookupError)
+		std::cout << "[Transaction Data]: " << std::endl << retrievedTx << std::endl << std::endl;
+
+	// Print out entire blockchain data
+	std::cout << "[Blockchain Data]: " << std::endl << chain << std::endl << std::endl;
 
 	// Print the average of the hash rates recorded
 	double total = 0;
 	for (const auto& hashRate : recordedhashRates)
 		total += hashRate;
 
-	std::cout << "Average Hash Rate: " << (total / recordedhashRates.size()) << " H/s\n\n";
+	std::cout << "[Average Hash Rate]: " << (total / recordedhashRates.size()) << " H/s\n\n";
 
 	// Print out the balance of public key addresses
-	std::cout << "| " << keyPair.GetPublicKeyHex() << " | Balance: " << chain.GetAddressBalance(keyPair) << std::endl;
-	std::cout << "| " << keyPair2.GetPublicKeyHex() << " | Balance: " << chain.GetAddressBalance(keyPair2) << std::endl;
+	std::cout << "[Public Key 1]: " << keyPair.GetPublicKeyHex() << " -> Balance: " << chain.GetAddressBalance(keyPair) << 
+		std::endl;
+	std::cout << "[Public Key 2]: " << keyPair2.GetPublicKeyHex() << " -> Balance: " << chain.GetAddressBalance(keyPair2) << 
+		std::endl;
 
 	// Print the current block height of the chain
-	std::cout << "Current Block Height: " << chain.GetLatestBlockHeight() << std::endl;
+	std::cout << "[Current Block Height]: " << chain.GetLatestBlockHeight() << std::endl;
 
 	// Verify the chain
 	chainError = Volt::VerifyChain(chain);
-	std::cout << "Is Chain Valid: " << (!chainError ? "Yes" : "No") << std::endl << std::endl;
+	std::cout << "[Is Chain Valid]: " << (!chainError ? "Yes" : "No") << std::endl << std::endl;
 
 	std::system("pause");
 	return 0;

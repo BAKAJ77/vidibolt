@@ -2,12 +2,12 @@
 #define VIDIBOLT_CORE_BLOCK_H
 
 #include <util/volt_api.h>
-#include <util/ts_unordered_map.h>
 #include <core/transaction.h>
 
 #include <boost/json.hpp>
 #include <functional>
 #include <string>
+#include <vector>
 #include <memory>
 
 using namespace boost;
@@ -26,7 +26,7 @@ namespace Volt
 	public:
 		VOLT_API Block();
 		VOLT_API Block(const Block& block);
-		VOLT_API Block(uint32_t index, const std::string& prevHash, const UnorderedMap<std::string, Transaction>& txs,
+		VOLT_API Block(uint32_t index, const std::string& prevHash, const std::vector<Transaction>& txs,
 			uint64_t difficulty, const std::string& blockHash = "", uint64_t timestamp = 0, uint64_t nonce = 0);
 
 		VOLT_API ~Block();
@@ -95,7 +95,7 @@ namespace Volt
 		VOLT_API const std::string& GetBlockHash() const;
 
 		// Returns the transactions contained in the block.
-		VOLT_API const UnorderedMap<std::string, Transaction>& GetTransactions() const;
+		VOLT_API const std::vector<Transaction>& GetTransactions() const;
 	};
 
 	// Returns the (hard-coded) genesis block of the entire blockchain.
@@ -111,7 +111,7 @@ namespace Volt
 	extern VOLT_API std::ostream& operator<<(std::ostream& stream, const Block& block);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Helper functions for conversions to and from boost json value.
+	// Helper functions for conversions to and from boost json value.
 
 	extern VOLT_API void tag_invoke(json::value_from_tag, json::value& obj, const Block& block);
 	extern VOLT_API Block tag_invoke(json::value_to_tag<Block>, const json::value& obj);

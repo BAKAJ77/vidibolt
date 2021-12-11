@@ -16,10 +16,11 @@ namespace Volt
 	private:
 		class Implementation;
 		std::unique_ptr<Implementation> impl;
+	private:
+		VOLT_API Chain(const std::vector<Block>& blockChain);
 	public:
 		VOLT_API Chain();
 		VOLT_API Chain(const Chain& chain);
-		VOLT_API Chain(const UnorderedMap<uint32_t, Block>& blockChain);
 
 		VOLT_API ~Chain();
 
@@ -48,7 +49,7 @@ namespace Volt
 		VOLT_API const Block& GetBlockAtIndexHeight(uint32_t blockIndex) const;
 
 		// Returns a vector array of the entire stored blockchain.
-		VOLT_API const UnorderedMap<uint32_t, Block>& GetBlockChain() const;
+		VOLT_API const std::vector<Block>& GetBlockChain() const;
 
 		// Returns the amount of coins currently being held by a public key address
 		VOLT_API double GetAddressBalance(const ECKeyPair& publicKey) const;
@@ -58,7 +59,21 @@ namespace Volt
 
 		// Returns the height index of the latest block in the chain.
 		VOLT_API uint32_t GetLatestBlockHeight() const;
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Helper functions for conversions to and from boost json value.
+
+		extern friend VOLT_API void tag_invoke(json::value_from_tag, json::value& obj, const Chain& chain);
+		extern friend VOLT_API Chain tag_invoke(json::value_to_tag<Chain>, const json::value& obj);
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	};
+
+	// Returns string containing the chain data that has been serialized into a JSON format.
+	extern VOLT_API std::string SerializeChain(const Chain& chain);
+
+	// Operator overload for easier outputting of chain data to the output stream.
+	extern VOLT_API std::ostream& operator<<(std::ostream& stream, const Chain& chain);
 }
 
 #endif

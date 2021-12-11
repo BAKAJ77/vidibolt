@@ -1,28 +1,27 @@
 #include <core/chain.h>
 #include <crypto/sha256.h>
 #include <cassert>
+#include <sstream>
 
 namespace Volt
 {
 	class Chain::Implementation
 	{
 	public:
-		UnorderedMap<uint32_t, Block> blockChain;
+		std::vector<Block> blockChain;
 	public:
-		Implementation()
-		{
-			const Block genesis = Volt::GetGenesisBlock();
-			this->blockChain.Insert(genesis.GetIndex(), genesis);
-		};
+		Implementation() :
+			blockChain({ Volt::GetGenesisBlock() })
+		{}
 
 		Implementation(const Implementation& impl) :
 			blockChain(impl.blockChain)
 		{}
 
-		Implementation(const UnorderedMap<uint32_t, Block>& blockChain) :
+		Implementation(const std::vector<Block>& blockChain) :
 			blockChain(blockChain)
 		{
-			assert(!blockChain.IsEmpty()); // The blockchain must always have at least a genesis block in it
+			assert(!blockChain.empty()); // The blockchain must always have at least a genesis block in it
 		}
 
 		~Implementation() = default;
@@ -41,7 +40,7 @@ namespace Volt
 		impl(std::make_unique<Implementation>(*chain.impl))
 	{}
 
-	Chain::Chain(const UnorderedMap<uint32_t, Block>& blockChain) :
+	Chain::Chain(const std::vector<Block>& blockChain) :
 		impl(std::make_unique<Implementation>(blockChain))
 	{}
 
@@ -54,15 +53,15 @@ namespace Volt
 
 	const Block& Chain::GetLatestBlock() const
 	{
-		return this->impl->blockChain.GetElement(this->GetLatestBlockHeight());
+		return this->impl->blockChain.back();
 	}
 
 	const Block& Chain::GetBlockAtIndexHeight(uint32_t blockIndex) const
 	{
-		return this->impl->blockChain.GetElement(blockIndex);
+		return this->impl->blockChain[blockIndex];
 	}
 
-	const UnorderedMap<uint32_t, Block>& Chain::GetBlockChain() const
+	const std::vector<Block>& Chain::GetBlockChain() const
 	{
 		return this->impl->blockChain;
 	}
@@ -70,11 +69,12 @@ namespace Volt
 	double Chain::GetAddressBalance(const ECKeyPair& publicKey) const
 	{
 		double balance = 0;
-		for (uint32_t blockIndex = 0; blockIndex < this->impl->blockChain.GetSize(); blockIndex++)
-		{
-			const Block& block = this->impl->blockChain.GetElement(blockIndex);
 
-			for (const auto& tx : block.GetTransactions())
+		for (uint32_t blockIndex = 0; blockIndex < this->impl->blockChain.size(); blockIndex++)
+		{
+			const Block& block = this->impl->blockChain[blockIndex];
+
+			for (const Transaction& tx : block.GetTransactions())
 			{
 				if (publicKey.GetPublicKeyHex() == tx.GetSenderKey())
 					balance -= (tx.GetAmount() + tx.GetFee());
@@ -97,7 +97,7 @@ namespace Volt
 
 	uint32_t Chain::GetLatestBlockHeight() const
 	{
-		return (uint32_t)(this->impl->blockChain.GetSize() - 1);
+		return (uint32_t)(this->impl->blockChain.size() - 1);
 	}
 
 	ErrorCode PushBlock(Chain& chain, const Block& block)
@@ -113,7 +113,7 @@ namespace Volt
 
 		ErrorCode error = Volt::VerifyBlock(block, chain);
 		if (!error)
-			chain.impl->blockChain.Insert(block.GetIndex(), block);
+			chain.impl->blockChain.emplace_back(block);
 
 		return error;
 	}
@@ -124,9 +124,9 @@ namespace Volt
 		if (chain.GetLatestBlockHeight() < 1)
 			return ErrorID::CHAIN_EMPTY;
 
-		for (size_t blockIndex = 0; blockIndex < chain.impl->blockChain.GetSize(); blockIndex++)
+		for (uint32_t blockIndex = 0; blockIndex < (uint32_t)chain.impl->blockChain.size(); blockIndex++)
 		{
-			const Block& block = chain.impl->blockChain.GetElement((uint32_t)blockIndex);
+			const Block& block = chain.impl->blockChain[blockIndex];
 
 			// Check that the block is valid
 			ErrorCode error = Volt::VerifyBlock(block, chain);
@@ -144,17 +144,17 @@ namespace Volt
 		uint64_t timestamp = Volt::ConvertHexToUint(timestampHex);
 
 		// Attempt to find the transaction matching the hash given
-		for (uint32_t blockIndex = 0; blockIndex < chain.impl->blockChain.GetSize(); blockIndex++)
+		for (uint32_t blockIndex = 0; blockIndex < (uint32_t)chain.impl->blockChain.size(); blockIndex++)
 		{
-			const Block& block = chain.impl->blockChain.GetElement(blockIndex);
+			const Block& block = chain.impl->blockChain[blockIndex];
 
 			// No point searching through blocks that were created before the transaction was.
 			// So we skip blocks that existed before the transaction did.
 			if (block.GetTimestamp() >= timestamp)
 			{
-				for (const auto& tx : block.GetTransactions())
+				for (const Transaction& tx : block.GetTransactions())
 				{
-					if (txHash == tx.GetTxHash())
+					if (tx.GetTxHash() == txHash)
 					{
 						returnedTx = tx;
 						return ErrorID::NONE;
@@ -164,5 +164,43 @@ namespace Volt
 		}
 
 		return ErrorID::TRANSACTION_NOT_FOUND_IN_CHAIN;
+	}
+
+	std::string SerializeChain(const Chain& chain)
+	{
+		// Initialize the json serializer
+		json::serializer serializer;
+		const json::value chainData = json::value_from(chain);
+		serializer.reset(&chainData);
+
+		// Stream serialized data into stringstream object
+		std::stringstream jsonStream;
+		while (!serializer.done())
+		{
+			char buffer[BOOST_JSON_STACK_BUFFER_SIZE];
+			jsonStream << serializer.read(buffer);
+		}
+
+		return jsonStream.str();
+	}
+
+	std::ostream& operator<<(std::ostream& stream, const Chain& chain)
+	{
+		stream << Volt::SerializeChain(chain);
+		return stream;
+	}
+
+	void tag_invoke(json::value_from_tag, json::value& obj, const Chain& chain)
+	{
+		obj = {
+			{ "blocks", chain.GetBlockChain() }
+		};
+	}
+
+	Chain tag_invoke(json::value_to_tag<Chain>, const json::value& obj)
+	{
+		return Chain { 
+			json::value_to<std::vector<Block>>(obj.at("blocks")) 
+		};
 	}
 }

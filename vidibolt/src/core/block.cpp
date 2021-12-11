@@ -16,14 +16,14 @@ namespace Volt
 		uint32_t index;
 		uint64_t timestamp, difficulty, nonce;
 		std::string previousHash, hash;
-		UnorderedMap<std::string, Transaction> txs;
+		std::vector<Transaction> txs;
 	public:
 		Implementation() :
 			index(0), timestamp(0), nonce(0), difficulty(0)
 		{}
 
 		Implementation(uint32_t index, uint64_t timestamp, const std::string& prevHash, 
-			const UnorderedMap<std::string, Transaction>& txs, const std::string& blockHash, uint64_t difficulty, 
+			const std::vector<Transaction>& txs, const std::string& blockHash, uint64_t difficulty, 
 			uint64_t nonce) :
 			index(index), timestamp(timestamp), previousHash(prevHash), txs(txs), hash(blockHash), nonce(nonce), 
 			difficulty(difficulty)
@@ -43,7 +43,7 @@ namespace Volt
 			block.GetTransactions(), block.GetBlockHash(), block.GetDifficulty(), block.GetNonce()))
 	{}
 
-	Block::Block(uint32_t index, const std::string& prevHash, const UnorderedMap<std::string, Transaction>& txs, 
+	Block::Block(uint32_t index, const std::string& prevHash, const std::vector<Transaction>& txs, 
 		uint64_t difficulty, const std::string& blockHash, uint64_t timestamp, uint64_t nonce) :
 		impl(std::make_unique<Implementation>(index, timestamp, prevHash, txs, blockHash, difficulty, nonce))
 	{}
@@ -60,11 +60,8 @@ namespace Volt
 	{
 		// Combine the data of all transactions into one string of data
 		std::string combinedTxsData;
-		for (uint32_t index = 0; index < this->impl->txs.GetSize(); index++)
-		{
-			const Transaction& tx = this->impl->txs.GetElementAtIndex(index);
+		for (const Transaction& tx : this->impl->txs)
 			combinedTxsData += Volt::SerializeTransaction(tx);
-		}
 
 		// Combine all block data into one string, then convert string data into byte vector array
 		const std::string blockData = std::to_string(this->impl->index) + std::to_string(this->impl->nonce) + 
@@ -111,7 +108,7 @@ namespace Volt
 		return this->impl->hash;
 	}
 
-	const UnorderedMap<std::string, Transaction>& Block::GetTransactions() const
+	const std::vector<Transaction>& Block::GetTransactions() const
 	{
 		return this->impl->txs;
 	}
@@ -119,9 +116,8 @@ namespace Volt
 	ErrorCode VerifyBlock(const Block& block, const Chain& chain)
 	{
 		// Check that all the transactions contained are valid
-		for (uint32_t index = 0; index < block.impl->txs.GetSize(); index++)
+		for (const Transaction& tx : block.impl->txs)
 		{
-			const Transaction& tx = block.impl->txs.GetElementAtIndex(index);
 			ErrorCode error = Volt::VerifyTransaction(tx);
 			if (error)
 				return error;
@@ -188,7 +184,7 @@ namespace Volt
 	{
 		// Get the latest block in the chain and get transactions to be included into the block
 		const Block& latestBlock = chain.GetLatestBlock();
-		UnorderedMap<std::string, Transaction> txs;
+		std::vector<Transaction> txs;
 
 		if (txHandler) // Use the given custom transaction handler function
 		{
@@ -198,7 +194,7 @@ namespace Volt
 				{
 					const Transaction tx = Volt::PopTransactionAtIndex(pool, i);
 					if (txHandler(std::ref(tx)))
-						txs.Insert(tx.GetTxHash(), tx);
+						txs.emplace_back(tx);
 				}
 				else
 					break;
@@ -214,17 +210,14 @@ namespace Volt
 		if (minerPublicKey)
 		{
 			double totalFees = 0;
-			for (uint32_t index = 0; index < txs.GetSize(); index++)
-			{
-				const Transaction& tx = txs.GetElementAtIndex(index);
+			for (const Transaction& tx : txs)
 				totalFees += tx.GetFee();
-			}
 
 			Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX),
 				chain.GetMiningRewardAmount() + totalFees, 0, Volt::GetTimeSinceEpoch(), "", 
 				minerPublicKey->GetPublicKeyHex());
 
-			block.impl->txs.Insert(tx.GetTxHash(), tx);
+			block.impl->txs.emplace_back(tx);
 		}
 
 		return block;
@@ -382,7 +375,7 @@ namespace Volt
 			{ "nonce", block.GetNonce() },
 			{ "previousHash", block.GetPreviousBlockHash() },
 			{ "hash", block.GetBlockHash() },
-			{ "transactions", block.GetTransactions().GetUnorderedMapObject() }
+			{ "transactions", block.GetTransactions() }
 		};
 	}
 
@@ -391,7 +384,7 @@ namespace Volt
 		return Block {
 			json::value_to<uint32_t>(obj.at("index")),
 			json::value_to<std::string>(obj.at("previousHash")),
-			json::value_to<std::unordered_map<std::string, Transaction>>(obj.at("transactions")),
+			json::value_to<std::vector<Transaction>>(obj.at("transactions")),
 			json::value_to<uint64_t>(obj.at("difficulty")),
 			json::value_to<std::string>(obj.at("hash")),
 			json::value_to<uint64_t>(obj.at("timestamp")),

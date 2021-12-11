@@ -3,7 +3,6 @@
 
 #include <util/volt_api.h>
 #include <util/ts_deque.h>
-#include <util/ts_unordered_map.h>
 #include <core/transaction.h>
 
 #include <vector>
@@ -45,10 +44,10 @@ namespace Volt
 		// Pops the transaction at the specified index in the queue from the mempool then returns it.
 		friend extern VOLT_API Transaction PopTransactionAtIndex(MemPool& pool, size_t index);
 
-		// Pops specified number of transactions from the mempool queue and returns them as a container of transactions.
+		// Pops specified number of transactions from the mempool queue and returns them as a vector array of transactions.
 		// Note that the specified number of transactions may not be popped if there is less pending transactions
 		// in the mempool than that specified to be popped (via numTxs).
-		friend extern VOLT_API UnorderedMap<std::string, Transaction> PopTransactions(MemPool& pool, uint32_t numTxs);
+		friend extern VOLT_API std::vector<Transaction> PopTransactions(MemPool& pool, uint32_t numTxs);
 
 		// Returns the number of pending transactions in the mempool.
 		uint32_t GetPoolSize() const;

@@ -115,10 +115,10 @@ namespace Volt
 		return tx;
 	}
 
-	UnorderedMap<std::string, Transaction> PopTransactions(MemPool& pool, uint32_t numTxs)
+	std::vector<Transaction> PopTransactions(MemPool& pool, uint32_t numTxs)
 	{
 		// Pop transactions off the mempool queue and insert them intot the transaction vector
-		UnorderedMap<std::string, Transaction> poppedTxs;
+		std::vector<Transaction> poppedTxs;
 		const uint32_t poolSize = (uint32_t)pool.impl->pendingTxs.GetSize();
 
 		for (uint32_t i = 0; i < numTxs; i++)
@@ -127,7 +127,7 @@ namespace Volt
 			{
 				const Transaction& tx = pool.impl->pendingTxs.GetFrontElement();
 
-				poppedTxs.Insert(tx.GetTxHash(), tx);
+				poppedTxs.emplace_back(tx);
 				pool.impl->pendingTxs.PopFrontElement();
 			}
 			else
