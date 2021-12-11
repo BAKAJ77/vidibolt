@@ -168,7 +168,7 @@ namespace Volt
 			}
 		}
 
-		return ErrorID::TRANSACTION_NOT_FOUND_IN_CHAIN;
+		return ErrorID::TRANSACTION_NOT_FOUND;
 	}
 
 	std::string SerializeChain(const Chain& chain)

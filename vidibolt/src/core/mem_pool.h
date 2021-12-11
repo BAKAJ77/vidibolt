@@ -49,6 +49,12 @@ namespace Volt
 		// in the mempool than that specified to be popped (via numTxs).
 		friend extern VOLT_API std::vector<Transaction> PopTransactions(MemPool& pool, uint32_t numTxs);
 
+		// Looks through the mempool for the pending transaction matching the given transaction hash.
+		// If the transaction is found, it is returned via the second parameter 'returnedTx'.
+		// An error code is returned if something goes wrong e.g. the transaction not being found etc.
+		friend extern VOLT_API ErrorCode FindTransaction(const MemPool& pool, const std::string& txHash,
+			Transaction& returnedTx);
+
 		// Returns the number of pending transactions in the mempool.
 		uint32_t GetPoolSize() const;
 	};

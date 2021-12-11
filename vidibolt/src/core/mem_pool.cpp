@@ -136,4 +136,19 @@ namespace Volt
 
 		return poppedTxs;
 	}
+
+	ErrorCode FindTransaction(const MemPool& pool, const std::string& txHash, Transaction& returnedTx)
+	{
+		for (uint32_t index = 0; index < pool.GetPoolSize(); index++)
+		{
+			const Transaction& tx = pool.impl->pendingTxs[index];
+			if (tx.GetTxHash() == txHash)
+			{
+				returnedTx = tx;
+				return ErrorID::NONE;
+			}
+		}
+
+		return ErrorID::TRANSACTION_NOT_FOUND;
+	}
 }
