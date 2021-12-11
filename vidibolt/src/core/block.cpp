@@ -16,14 +16,15 @@ namespace Volt
 		uint32_t index;
 		uint64_t timestamp, difficulty, nonce;
 		std::string previousHash, hash;
-		std::vector<Transaction> txs;
+		UnorderedMap<std::string, Transaction> txs;
 	public:
 		Implementation() :
 			index(0), timestamp(0), nonce(0), difficulty(0)
 		{}
 
-		Implementation(uint32_t index, uint64_t timestamp, const std::string& prevHash, const std::vector<Transaction>& txs,
-			const std::string& blockHash, uint64_t difficulty, uint64_t nonce) :
+		Implementation(uint32_t index, uint64_t timestamp, const std::string& prevHash, 
+			const UnorderedMap<std::string, Transaction>& txs, const std::string& blockHash, uint64_t difficulty, 
+			uint64_t nonce) :
 			index(index), timestamp(timestamp), previousHash(prevHash), txs(txs), hash(blockHash), nonce(nonce), 
 			difficulty(difficulty)
 		{}
@@ -42,8 +43,8 @@ namespace Volt
 			block.GetTransactions(), block.GetBlockHash(), block.GetDifficulty(), block.GetNonce()))
 	{}
 
-	Block::Block(uint32_t index, const std::string& prevHash, const std::vector<Transaction>& txs, uint64_t difficulty,
-		const std::string& blockHash, uint64_t timestamp, uint64_t nonce) :
+	Block::Block(uint32_t index, const std::string& prevHash, const UnorderedMap<std::string, Transaction>& txs, 
+		uint64_t difficulty, const std::string& blockHash, uint64_t timestamp, uint64_t nonce) :
 		impl(std::make_unique<Implementation>(index, timestamp, prevHash, txs, blockHash, difficulty, nonce))
 	{}
 
@@ -59,8 +60,11 @@ namespace Volt
 	{
 		// Combine the data of all transactions into one string of data
 		std::string combinedTxsData;
-		for (const auto& tx : this->impl->txs)
+		for (uint32_t index = 0; index < this->impl->txs.GetSize(); index++)
+		{
+			const Transaction& tx = this->impl->txs.GetElementAtIndex(index);
 			combinedTxsData += Volt::SerializeTransaction(tx);
+		}
 
 		// Combine all block data into one string, then convert string data into byte vector array
 		const std::string blockData = std::to_string(this->impl->index) + std::to_string(this->impl->nonce) + 
@@ -107,7 +111,7 @@ namespace Volt
 		return this->impl->hash;
 	}
 
-	const std::vector<Transaction>& Block::GetTransactions() const
+	const UnorderedMap<std::string, Transaction>& Block::GetTransactions() const
 	{
 		return this->impl->txs;
 	}
@@ -115,8 +119,9 @@ namespace Volt
 	ErrorCode VerifyBlock(const Block& block, const Chain& chain)
 	{
 		// Check that all the transactions contained are valid
-		for (const auto& tx : block.GetTransactions())
+		for (uint32_t index = 0; index < block.impl->txs.GetSize(); index++)
 		{
+			const Transaction& tx = block.impl->txs.GetElementAtIndex(index);
 			ErrorCode error = Volt::VerifyTransaction(tx);
 			if (error)
 				return error;
@@ -140,7 +145,7 @@ namespace Volt
 		}
 		else
 		{
-			const Block& genesisBlock = chain.GetBlockChain().GetElement(0);
+			const Block& genesisBlock = chain.GetBlockChain().front();
 			if (genesisBlock != Volt::GetGenesisBlock())
 				return ErrorID::GENESIS_BLOCK_INVALID;
 		}
@@ -183,7 +188,7 @@ namespace Volt
 	{
 		// Get the latest block in the chain and get transactions to be included into the block
 		const Block& latestBlock = chain.GetLatestBlock();
-		std::vector<Transaction> txs;
+		UnorderedMap<std::string, Transaction> txs;
 
 		if (txHandler) // Use the given custom transaction handler function
 		{
@@ -193,7 +198,7 @@ namespace Volt
 				{
 					const Transaction tx = Volt::PopTransactionAtIndex(pool, i);
 					if (txHandler(std::ref(tx)))
-						txs.emplace_back(tx);
+						txs.Insert(tx.GetTxHash(), tx);
 				}
 				else
 					break;
@@ -209,14 +214,17 @@ namespace Volt
 		if (minerPublicKey)
 		{
 			double totalFees = 0;
-			for (const auto& tx : block.GetTransactions())
+			for (uint32_t index = 0; index < txs.GetSize(); index++)
+			{
+				const Transaction& tx = txs.GetElementAtIndex(index);
 				totalFees += tx.GetFee();
+			}
 
 			Transaction tx(TransactionType::MINING_REWARD, Volt::GenerateRandomUint64(0, UINT64_MAX),
 				chain.GetMiningRewardAmount() + totalFees, 0, Volt::GetTimeSinceEpoch(), "", 
 				minerPublicKey->GetPublicKeyHex());
 
-			block.impl->txs.emplace_back(tx);
+			block.impl->txs.Insert(tx.GetTxHash(), tx);
 		}
 
 		return block;
@@ -334,6 +342,12 @@ namespace Volt
 		return ErrorID::NONE;
 	}
 
+	std::ostream& operator<<(std::ostream& stream, const Block& block)
+	{
+		stream << json::serialize(json::value_from(block));
+		return stream;
+	}
+
 	Block GetGenesisBlock()
 	{
 		return Block(0, "", {}, 0, "AC7FDA5E0E2BF8B6600D4AFAC9C6095E89E9C14B30BC4A114FAB090BCAFADC79", 1638318078);
@@ -344,6 +358,7 @@ namespace Volt
 		return lhs.GetIndex() == rhs.GetIndex() &&
 			lhs.GetTimestamp() == rhs.GetTimestamp() &&
 			lhs.GetNonce() == rhs.GetNonce() &&
+			lhs.GetDifficulty() == rhs.GetDifficulty() &&
 			lhs.GetPreviousBlockHash() == rhs.GetPreviousBlockHash() &&
 			lhs.GetBlockHash() == rhs.GetBlockHash();
 	}
@@ -353,8 +368,35 @@ namespace Volt
 		return lhs.GetIndex() != rhs.GetIndex() ||
 			lhs.GetTimestamp() != rhs.GetTimestamp() ||
 			lhs.GetNonce() != rhs.GetNonce() ||
+			lhs.GetDifficulty() != rhs.GetDifficulty() ||
 			lhs.GetPreviousBlockHash() != rhs.GetPreviousBlockHash() ||
 			lhs.GetBlockHash() != rhs.GetBlockHash();
+	}
+
+	void tag_invoke(json::value_from_tag, json::value& obj, const Block& block)
+	{
+		obj = {
+			{ "index", block.GetIndex() },
+			{ "timestamp", block.GetTimestamp() },
+			{ "difficulty", block.GetDifficulty() },
+			{ "nonce", block.GetNonce() },
+			{ "previousHash", block.GetPreviousBlockHash() },
+			{ "hash", block.GetBlockHash() },
+			{ "transactions", block.GetTransactions().GetUnorderedMapObject() }
+		};
+	}
+
+	Block tag_invoke(json::value_to_tag<Block>, const json::value& obj)
+	{
+		return Block {
+			json::value_to<uint32_t>(obj.at("index")),
+			json::value_to<std::string>(obj.at("previousHash")),
+			json::value_to<std::unordered_map<std::string, Transaction>>(obj.at("transactions")),
+			json::value_to<uint64_t>(obj.at("difficulty")),
+			json::value_to<std::string>(obj.at("hash")),
+			json::value_to<uint64_t>(obj.at("timestamp")),
+			json::value_to<uint64_t>(obj.at("nonce"))
+		};
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

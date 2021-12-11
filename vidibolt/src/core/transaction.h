@@ -31,7 +31,7 @@ namespace Volt
 		std::string GetTransactionDataStr() const;
 
 		// Generates the hash of the transaction.
-		ErrorCode GenerateTxHash();
+		ErrorCode GenerateTxHash(std::string& generatedHash) const;
 	public:
 		VOLT_API Transaction();
 		VOLT_API Transaction(const Transaction& tx);
@@ -52,20 +52,6 @@ namespace Volt
 		// If the transaction is valid then the value of the error code returned will be 'ErrorID::NONE', else
 		// other possible error codes will be returned depending on the type of failure that occurred.
 		friend extern VOLT_API ErrorCode VerifyTransaction(const Transaction& tx);
-
-		// Returns string containing the transaction data that has been serialized into a JSON format.
-		friend extern VOLT_API std::string SerializeTransaction(const Transaction& tx);
-
-		// Operator overload for easier printing of the transaction data to the output stream.
-		friend extern VOLT_API std::ostream& operator<<(std::ostream& stream, const Transaction& tx);
-		
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Helper functions for conversions to and from boost json value.
-
-		friend extern VOLT_API void tag_invoke(json::value_from_tag, json::value& obj, const Transaction& tx);
-		friend extern VOLT_API Transaction tag_invoke(json::value_to_tag<Transaction>, const json::value& obj);
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		// Returns the type of the transaction.
 		VOLT_API const TransactionType& GetType() const;
@@ -95,8 +81,22 @@ namespace Volt
 		VOLT_API const std::string& GetTxHash() const;
 	};
 
+	// Returns string containing the transaction data that has been serialized into a JSON format.
+	extern VOLT_API std::string SerializeTransaction(const Transaction& tx);
+
 	// Operator overload for checking if both the transaction on the left and right hand side are equal.
 	extern VOLT_API bool operator==(const Transaction& lhs, const Transaction& rhs);
+
+	// Operator overload for easier outputting of transaction data to the output stream.
+	extern VOLT_API std::ostream& operator<<(std::ostream& stream, const Transaction& tx);
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Helper functions for conversions to and from boost json value.
+
+	extern VOLT_API void tag_invoke(json::value_from_tag, json::value& obj, const Transaction& tx);
+	extern VOLT_API Transaction tag_invoke(json::value_to_tag<Transaction>, const json::value& obj);
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 #endif

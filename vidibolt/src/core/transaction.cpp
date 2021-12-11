@@ -37,7 +37,7 @@ namespace Volt
 			this->GetSenderKey() + this->GetRecipientKey();
 	}
 
-	ErrorCode Transaction::GenerateTxHash()
+	ErrorCode Transaction::GenerateTxHash(std::string& generatedHash) const
 	{
 		// Combine all transaction data into one string of data
 		const std::string txData = this->GetTransactionDataStr();
@@ -57,7 +57,7 @@ namespace Volt
 				std::transform(timestampHex.begin(), timestampHex.end(), timestampHex.begin(), ::toupper);
 
 				// Append the converted timestamp hex string to the hash string 
-				this->impl->txHash = Volt::ConvertByteToHexData(outputHash) + timestampHex;
+				generatedHash = Volt::ConvertByteToHexData(outputHash) + timestampHex;
 			}
 		}
 
@@ -79,7 +79,7 @@ namespace Volt
 		impl(std::make_unique<Implementation>(type, id, amount, fee, timestamp, senderPK, recipientPK, signiture, txHash))
 	{
 		if (txHash.empty())
-			error ? *error = this->GenerateTxHash() : this->GenerateTxHash();
+			error ? *error = this->GenerateTxHash(this->impl->txHash) : this->GenerateTxHash(this->impl->txHash);
 	}
 
 	Transaction::~Transaction() = default;
@@ -152,10 +152,18 @@ namespace Volt
 
 	ErrorCode VerifyTransaction(const Transaction& tx)
 	{
+		// Verify that the transaction hash is valid
+		std::string generatedHash;
+		tx.GenerateTxHash(generatedHash);
+
+		if (tx.GetTxHash() != generatedHash)
+			return ErrorID::TRANSACTION_HASH_INVALID;
+
+		// Do transaction signiture verification process
 		ErrorCode error;
+
 		if (tx.GetType() != TransactionType::MINING_REWARD)
 		{
-			// Do transaction signiture verification process
 			std::vector<uint8_t> txHashBytes = Volt::ConvertHexToByteData(tx.GetTxHash().substr(0, SHA_256_DIGEST_LENGTH_HEX));
 			std::vector<uint8_t> signitureBytes = Volt::ConvertHexToByteData(tx.impl->signiture);
 
@@ -175,15 +183,15 @@ namespace Volt
 	void tag_invoke(json::value_from_tag, json::value& obj, const Transaction& tx)
 	{
 		obj = {
-			{ "type", (uint32_t)tx.impl->type },
-			{ "id", tx.impl->id },
-			{ "sender", tx.impl->senderPK },
-			{ "recipient", tx.impl->recipientPK },
-			{ "amount", tx.impl->amount },
-			{ "fee", tx.impl->fee },
-			{ "timestamp", tx.impl->timestamp },
-			{ "signiture", tx.impl->signiture },
-			{ "hash", tx.impl->txHash }
+			{ "type", (uint32_t)tx.GetType() },
+			{ "id", tx.GetID() },
+			{ "sender", tx.GetSenderKey() },
+			{ "recipient", tx.GetRecipientKey() },
+			{ "amount", tx.GetAmount() },
+			{ "fee", tx.GetFee() },
+			{ "timestamp", tx.GetTimestamp() },
+			{ "signiture", tx.GetSigniture() },
+			{ "hash", tx.GetTxHash() }
 		};
 	}
 
@@ -200,8 +208,7 @@ namespace Volt
 			json::value_to<std::string>(obj.at("sender")),
 			json::value_to<std::string>(obj.at("recipient")),
 			nullptr,
-			json::value_to<std::string>(obj.at("signiture")),
-			json::value_to<std::string>(obj.at("hash"))
+			json::value_to<std::string>(obj.at("signiture"))
 		};
 	}
 
