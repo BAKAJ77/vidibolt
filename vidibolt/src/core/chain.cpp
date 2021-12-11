@@ -100,6 +100,11 @@ namespace Volt
 		return (uint32_t)(this->impl->blockChain.size() - 1);
 	}
 
+	Chain CreateExistingChain(const std::vector<Block>& blockChain)
+	{
+		return Chain(blockChain);
+	}
+
 	ErrorCode PushBlock(Chain& chain, const Block& block)
 	{
 		// The block must be valid for it to be appended to the chain, so we check if it is before appending it to the chain.
@@ -199,8 +204,6 @@ namespace Volt
 
 	Chain tag_invoke(json::value_to_tag<Chain>, const json::value& obj)
 	{
-		return Chain { 
-			json::value_to<std::vector<Block>>(obj.at("blocks")) 
-		};
+		return Volt::CreateExistingChain(json::value_to<std::vector<Block>>(obj.at("blocks")));
 	}
 }

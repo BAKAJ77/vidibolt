@@ -27,6 +27,9 @@ namespace Volt
 		// Operator overload for assignment operations.
 		VOLT_API void operator=(const Chain& chain);
 
+		// Creates new chain object initialized with the given existing vector array of blocks (aka blockchain).
+		friend extern VOLT_API Chain CreateExistingChain(const std::vector<Block>& blockChain);
+
 		// Checks if the block is valid, then appends it to the stored chain if it's valid.
 		// An error code is returned in the event of a failure occurring.
 		friend extern VOLT_API ErrorCode PushBlock(Chain& chain, const Block& block);
@@ -59,14 +62,6 @@ namespace Volt
 
 		// Returns the height index of the latest block in the chain.
 		VOLT_API uint32_t GetLatestBlockHeight() const;
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Helper functions for conversions to and from boost json value.
-
-		extern friend VOLT_API void tag_invoke(json::value_from_tag, json::value& obj, const Chain& chain);
-		extern friend VOLT_API Chain tag_invoke(json::value_to_tag<Chain>, const json::value& obj);
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	};
 
 	// Returns string containing the chain data that has been serialized into a JSON format.
@@ -74,6 +69,14 @@ namespace Volt
 
 	// Operator overload for easier outputting of chain data to the output stream.
 	extern VOLT_API std::ostream& operator<<(std::ostream& stream, const Chain& chain);
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Helper functions for conversions to and from boost json value.
+
+	extern VOLT_API void tag_invoke(json::value_from_tag, json::value& obj, const Chain& chain);
+	extern VOLT_API Chain tag_invoke(json::value_to_tag<Chain>, const json::value& obj);
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 #endif
