@@ -10,9 +10,11 @@ using namespace boost;
 
 namespace Volt
 {
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	class TCPServer::Implementation
 	{
-	private:
+	public:
 		asio::io_context ctx;
 		asio::ip::tcp::acceptor acceptor;
 		std::thread listeningThread;
@@ -113,27 +115,9 @@ namespace Volt
 					this->inboundConnections.Erase(connection->GetID());
 			}
 		}
-
-		Deque<RecievedMessage>& GetInboundMessages()
-		{
-			return this->inboundMsgs;
-		}
-
-		const uint32_t& GetPortNumber() const
-		{
-			return this->port;
-		}
-
-		bool IsListening() const
-		{
-			return this->isListening;
-		}
-
-		const ErrorCode& GetListenerErrorState() const
-		{
-			return this->listenerErrorState;
-		}
 	};
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	TCPServer::TCPServer(uint32_t port, bool startListener) :
 		impl(std::make_unique<Implementation>(port, startListener))
@@ -168,21 +152,23 @@ namespace Volt
 
 	Deque<RecievedMessage>& TCPServer::GetInboundMessages() 
 	{ 
-		return this->impl->GetInboundMessages(); 
+		return this->impl->inboundMsgs; 
 	}
 
 	const uint32_t& TCPServer::GetPortNumber() const 
 	{ 
-		return this->impl->GetPortNumber(); 
+		return this->impl->port; 
 	}
 
 	bool TCPServer::IsListening() const 
 	{ 
-		return this->impl->IsListening(); 
+		return this->impl->isListening; 
 	}
 
 	const ErrorCode& TCPServer::GetListenerErrorState() const
 	{ 
-		return this->impl->GetListenerErrorState(); 
+		return this->impl->listenerErrorState; 
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

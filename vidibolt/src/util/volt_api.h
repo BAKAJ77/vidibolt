@@ -13,6 +13,9 @@
 	#define VOLT_API
 #endif
 
+#define VOLT_MAINNET_NETWORK_ID 0x5f2c781316c75688
+#define VOLT_TESTNET_NETWORK_ID 0x05d73ff55bb77e55
+
 typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 typedef unsigned char uint8_t;

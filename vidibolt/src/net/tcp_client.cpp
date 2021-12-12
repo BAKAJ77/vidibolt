@@ -70,8 +70,6 @@ namespace Volt
 					this->outboundConnection.reset();
 				}
 			}
-			else
-				error = ErrorID::CONNECTION_NO_LONGER_OPEN;
 
 			return error;
 		}

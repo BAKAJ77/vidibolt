@@ -37,7 +37,8 @@ namespace Volt
 			if (!ec)
 			{
 				RecievedMessage inboundMsg;
-				inboundMsg.connectionID = id;
+				inboundMsg.connectionID = this->id;
+				inboundMsg.senderAddress = this->socket.remote_endpoint().address().to_v4().to_string();
 				memcpy(&inboundMsg.transmittedMsg.header, buffer.data(), sizeof(Header));
 
 				this->SetupBuffer(inboundMsg.transmittedMsg.payload, inboundMsg.transmittedMsg.header.sizeBytes);
@@ -121,13 +122,27 @@ namespace Volt
 					// Setup the recieve buffer, then begin asynchronous read operation from the socket in stream
 					// This asynchronous read operation will only read the header part of the message
 					uint32_t payloadSizeBytes = 0;
-					memcpy(&payloadSizeBytes, recieveBuffer.data() + sizeof(MessageRepType), sizeof(uint32_t));
-					this->SetupBuffer(recieveBuffer, sizeof(Header) + payloadSizeBytes, false);
+					memcpy(&payloadSizeBytes, recieveBuffer.data() + sizeof(MessageRepType), 
+						sizeof(uint32_t));
+					
+					if (payloadSizeBytes > 0) // Only bother attempting payload read if there is any to read in the first place
+					{
+						this->SetupBuffer(recieveBuffer, sizeof(Header) + payloadSizeBytes, false);
 
-					asio::async_read(this->socket, asio::buffer(recieveBuffer.data() + sizeof(Header), payloadSizeBytes),
-						asio::transfer_exactly(payloadSizeBytes), boost::bind(&Implementation::OnRecieveCompletion, this, 
-							asio::placeholders::error, asio::placeholders::bytes_transferred, std::ref(recieveBuffer), 
-							std::ref(errorCodeRecieve)));
+						asio::async_read(this->socket, asio::buffer(recieveBuffer.data() + sizeof(Header), payloadSizeBytes),
+							asio::transfer_exactly(payloadSizeBytes), boost::bind(&Implementation::OnRecieveCompletion, this,
+								asio::placeholders::error, asio::placeholders::bytes_transferred, std::ref(recieveBuffer),
+								std::ref(errorCodeRecieve)));
+					}
+					else
+					{
+						RecievedMessage inboundMsg;
+						inboundMsg.connectionID = this->id;
+						inboundMsg.senderAddress = this->socket.remote_endpoint().address().to_v4().to_string();
+						memcpy(&inboundMsg.transmittedMsg.header, recieveBuffer.data(), sizeof(Header));
+
+						this->inboundMsgs.PushBackElement(inboundMsg);
+					}
 				}
 			}
 

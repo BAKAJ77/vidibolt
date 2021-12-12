@@ -11,9 +11,11 @@ namespace Volt
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
 	// An enumeration which holds the purpose of indicating what type of message is being sent/recieved.
-	enum class MessageRepType
+	enum class MessageRepType : uint32_t
 	{
-		TEST_TYPE
+		TRANSACTION_BROADCAST,
+		NODE_GUID_REQUEST,
+		NODE_GUID_RESPONSE
 	};
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,6 +26,7 @@ namespace Volt
 	public:
 		MessageRepType id;
 		uint32_t sizeBytes = 0;
+		uint64_t networkID = 0;
 	};
 
 	// The entire message struct which holds the message header and the data being transmitted.
@@ -54,14 +57,14 @@ namespace Volt
 
 			// Get the offset in payload data buffer (a vector of bytes) to insert new data
 			// Also resize the buffer so it's able to store the new data
-			const size_t offset = message.payloadData.size();
-			message.payloadData.resize(offset + sizeof(data));
+			const size_t offset = message.payload.size();
+			message.payload.resize(offset + sizeof(data));
 
 			// Copy the data into the bytes buffer
-			memcpy(message.payloadData.data() + offset, &data, sizeof(data));
+			memcpy(message.payload.data() + offset, &data, sizeof(data));
 
 			// Update the size (in bytes) counter in the message header
-			message.header.sizeBytes = (uint32_t)message.payloadData.size();
+			message.header.sizeBytes = (uint32_t)message.payload.size();
 			return message; // We return a reference to the message so the operator can be chained
 		}
 
@@ -76,12 +79,12 @@ namespace Volt
 
 			// Get the offset in the payload data buffer where the data will be copied from
 			// Copy the data into the reference variable given then shrink the buffer since the data has been pulled
-			const size_t offset = message.payloadData.size() - sizeof(data);
-			memcpy(&data, message.payloadData.data() + offset, sizeof(data));
-			message.payloadData.resize(offset);
+			const size_t offset = message.payload.size() - sizeof(data);
+			memcpy(&data, message.payload.data() + offset, sizeof(data));
+			message.payload.resize(offset);
 
 			// Update the size (in bytes) counter in the message header
-			message.header.sizeBytes = (uint32_t)message.payloadData.size();
+			message.header.sizeBytes = (uint32_t)message.payload.size();
 			return message;
 		}
 
@@ -135,6 +138,8 @@ namespace Volt
 	{
 	public:
 		uint32_t connectionID;
+		std::string senderAddress; // The IPv4 address of the sender
+
 		Message transmittedMsg;
 	public:
 		RecievedMessage() :

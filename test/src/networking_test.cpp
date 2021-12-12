@@ -13,7 +13,8 @@ int main(int argc, char** argv)
 	///////////////////////////////////////////////////////////////
 	
 	Volt::Message msg;
-	msg.header.id = Volt::MessageRepType::TEST_TYPE;
+	msg.header.id = Volt::MessageRepType::TRANSACTION_BROADCAST;
+	msg.header.networkID = VOLT_MAINNET_NETWORK_ID;
 
 	std::string str = GetTimeString();
 	msg << str;
@@ -25,10 +26,22 @@ int main(int argc, char** argv)
 
 	if (num == 1) // Server side
 	{
-		Volt::Node serverNode(60000);
-		std::cout << "Waiting for connection...\n";
+		Volt::Node serverNode(Volt::NodeType::REGULAR);
+		serverNode.InitNode(0);
+
+		std::cout << "Node 0 has started!\n";
 
 		while (true)
+		{
+			Volt::ErrorCode error = serverNode.FlushNode();
+			if (error)
+			{
+				std::cout << "An error occurred!\n";
+				break;
+			}
+		}
+
+		/*while (true)
 		{
 			serverNode.GetServer().UpdateState();
 
@@ -42,15 +55,42 @@ int main(int argc, char** argv)
 
 				std::cout << strIn;
 			}
-		}
+		}*/
 	}
 	else // Client side
 	{
-		Volt::Node clientNode(60000);
-		clientNode.GetClient().Connect("100.70.63.205");
+		Volt::Node clientNode(Volt::NodeType::REGULAR);
+		clientNode.InitNode(1);
+
+		std::cout << "Node 1 has started!\n";
+
+		Volt::ErrorCode error = Volt::AddPeerNode(clientNode, "192.168.1.31");
+
+		if (!error)
+		{
+			while (true)
+			{
+				Volt::ErrorCode error = clientNode.FlushNode();
+				if (error)
+				{
+					std::cout << "An error occurred!\n";
+					break;
+				}
+
+				if (!clientNode.GetPeerList().IsEmpty())
+				{
+					const auto& list = clientNode.GetPeerList();
+					std::cin.get();
+				}
+			}
+		}
+		else
+			std::cout << "An error occurred!\n";
+
+		/*clientNode.GetClient().Connect("192.168.1.31");
 		clientNode.GetClient().PushOutboundMessage(msg);
 		clientNode.GetClient().UpdateState();
-		clientNode.GetClient().Disconnect();
+		clientNode.GetClient().Disconnect();*/
 	}
 
 	///////////////////////////////////////////////////////////////
