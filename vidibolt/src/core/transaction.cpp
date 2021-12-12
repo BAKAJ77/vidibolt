@@ -27,42 +27,44 @@ namespace Volt
 		{}
 
 		~Implementation() = default;
+
+		// Returns a string containing all the transaction data appended together.
+		std::string GetTransactionDataStr() const
+		{
+			return std::to_string(this->id) + std::to_string(this->amount) + std::to_string(this->timestamp) +
+				this->senderPK + this->recipientPK;
+		}
+
+		// Generates a hash string based on the transaction's data
+		ErrorCode GenerateTxHash(std::string& generatedHash) const
+		{
+			// Combine all transaction data into one string of data
+			const std::string txData = this->GetTransactionDataStr();
+			const std::vector<uint8_t> txDataBytes = Volt::GetRawString(txData);
+
+			// Get the hash from the transaction data then get the hash from the generated
+			// So basically we are doing the hash operation twice
+			std::vector<uint8_t> outputHash;
+			ErrorCode error = Volt::GetSHA256Digest(txDataBytes, outputHash);
+			if (!error)
+			{
+				error = Volt::GetSHA256Digest(outputHash, outputHash); // Get hash from previous generated hash
+				if (!error)
+				{
+					// Convert timestamp string to hex
+					std::string timestampHex = Volt::ConvertUintToHex(this->timestamp);
+					std::transform(timestampHex.begin(), timestampHex.end(), timestampHex.begin(), ::toupper);
+
+					// Append the converted timestamp hex string to the hash string 
+					generatedHash = Volt::ConvertByteToHexData(outputHash) + timestampHex;
+				}
+			}
+
+			return error;
+		}
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	std::string Transaction::GetTransactionDataStr() const
-	{
-		return std::to_string(this->GetID()) + std::to_string(this->GetAmount()) + std::to_string(this->GetTimestamp()) + 
-			this->GetSenderKey() + this->GetRecipientKey();
-	}
-
-	ErrorCode Transaction::GenerateTxHash(std::string& generatedHash) const
-	{
-		// Combine all transaction data into one string of data
-		const std::string txData = this->GetTransactionDataStr();
-		const std::vector<uint8_t> txDataBytes = Volt::GetRawString(txData);
-
-		// Get the hash from the transaction data then get the hash from the generated
-		// So basically we are doing the hash operation twice
-		std::vector<uint8_t> outputHash;
-		ErrorCode error = Volt::GetSHA256Digest(txDataBytes, outputHash);
-		if (!error)
-		{
-			error = Volt::GetSHA256Digest(outputHash, outputHash); // Get hash from previous generated hash
-			if (!error)
-			{
-				// Convert timestamp string to hex
-				std::string timestampHex = Volt::ConvertUintToHex(this->GetTimestamp());
-				std::transform(timestampHex.begin(), timestampHex.end(), timestampHex.begin(), ::toupper);
-
-				// Append the converted timestamp hex string to the hash string 
-				generatedHash = Volt::ConvertByteToHexData(outputHash) + timestampHex;
-			}
-		}
-
-		return error;
-	}
 
 	Transaction::Transaction() :
 		impl(std::make_unique<Implementation>())
@@ -79,7 +81,7 @@ namespace Volt
 		impl(std::make_unique<Implementation>(type, id, amount, fee, timestamp, senderPK, recipientPK, signiture, txHash))
 	{
 		if (txHash.empty())
-			error ? *error = this->GenerateTxHash(this->impl->txHash) : this->GenerateTxHash(this->impl->txHash);
+			error ? *error = this->impl->GenerateTxHash(this->impl->txHash) : this->impl->GenerateTxHash(this->impl->txHash);
 	}
 
 	Transaction::~Transaction() = default;
@@ -154,7 +156,7 @@ namespace Volt
 	{
 		// Verify that the transaction hash is valid
 		std::string generatedHash;
-		tx.GenerateTxHash(generatedHash);
+		tx.impl->GenerateTxHash(generatedHash);
 
 		if (tx.GetTxHash() != generatedHash)
 			return ErrorID::TRANSACTION_HASH_INVALID;

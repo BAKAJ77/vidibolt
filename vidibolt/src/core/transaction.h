@@ -26,12 +26,6 @@ namespace Volt
 	private:
 		class Implementation;
 		std::unique_ptr<Implementation> impl;
-	private:
-		// Returns a string containing all the transaction data appended together.
-		std::string GetTransactionDataStr() const;
-
-		// Generates the hash of the transaction.
-		ErrorCode GenerateTxHash(std::string& generatedHash) const;
 	public:
 		VOLT_API Transaction();
 		VOLT_API Transaction(const Transaction& tx);
