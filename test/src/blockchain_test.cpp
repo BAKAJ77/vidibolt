@@ -35,8 +35,9 @@ int main(int argc, char** argv)
 	recordedhashRates.emplace_back(Volt::GetCurrentHashesPerSecond());
 
 	// Create a transaction and push the transaction to the mempool
-	std::string txHash;
-	txError = Volt::PushTransaction(memPool, chain, 100, 20, keyPair, keyPair2, &txHash);
+	Volt::Transaction tx;
+	tx = Volt::CreateNewTransaction(100, 20, keyPair, keyPair2, &txError);
+	txError = Volt::PushTransaction(memPool, chain, tx);
 	
 	// Mine 3rd block (this time we will use a different method to mine the block)
 	block = Volt::CreateBlock(memPool, chain, 2, &keyPair2, [](const Volt::Transaction& tx) { return true; });
@@ -47,7 +48,7 @@ int main(int argc, char** argv)
 
 	// Lookup our recent transaction in the chain, then print it to console
 	Volt::Transaction retrievedTx;
-	Volt::ErrorCode txLookupError = Volt::FindTransaction(chain, txHash, retrievedTx);
+	Volt::ErrorCode txLookupError = Volt::FindTransaction(chain, tx.GetTxHash(), retrievedTx);
 
 	if (!txLookupError)
 		std::cout << "[Transaction Data]: " << std::endl << retrievedTx << std::endl << std::endl;

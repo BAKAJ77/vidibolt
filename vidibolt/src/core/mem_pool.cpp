@@ -48,6 +48,16 @@ namespace Volt
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	Transaction CreateNewTransaction(double amount, double fee, const ECKeyPair& senderKeyPair, 
+		const ECKeyPair& recipientPublicKey, ErrorCode* error)
+	{
+		Transaction tx(TransactionType::TRANSFER, Volt::GenerateRandomUint64(0, UINT64_MAX), amount, fee,
+			Volt::GetTimeSinceEpoch(), senderKeyPair.GetPublicKeyHex(), recipientPublicKey.GetPublicKeyHex(), error);
+
+		error ? *error = Volt::SignTransaction(tx, senderKeyPair) : Volt::SignTransaction(tx, senderKeyPair);
+		return tx;
+	}
+
 	ErrorCode PushTransaction(MemPool& pool, const Chain& chain, const Transaction& tx)
 	{
 		// Check if transaction is already in the mem pool
@@ -90,28 +100,6 @@ namespace Volt
 		// The transaction has been deduced as valid so add it to mempool
 		pool.impl->pendingTxs.PushBackElement(tx);
 		return ErrorID::NONE;
-	}
-
-	ErrorCode PushTransaction(MemPool& pool, const Chain& chain, double amount, double fee, const ECKeyPair& senderKeyPair, 
-		const ECKeyPair& recipientPublicKey, std::string* txHash)
-	{
-		if (!senderKeyPair.HasPrivateKey())
-			return ErrorID::ECDSA_PRIVATE_KEY_REQUIRED;
-
-		// Initialize the transaction object
-		Transaction tx(TransactionType::TRANSFER, Volt::GenerateRandomUint64(0, UINT64_MAX), amount, fee,
-			Volt::GetTimeSinceEpoch(), senderKeyPair.GetPublicKeyHex(), recipientPublicKey.GetPublicKeyHex());
-		
-		// Sign the transaction then attempt to push transaction into the mempool
-		ErrorCode error = Volt::SignTransaction(tx, senderKeyPair);
-		if (!error)
-			error = Volt::PushTransaction(pool, chain, tx);
-
-		// Return the transaction hash if successful
-		if (!error && txHash)
-			*txHash = tx.GetTxHash();
-
-		return error;
 	}
 
 	Transaction PopTransactionAtIndex(MemPool& pool, size_t index)

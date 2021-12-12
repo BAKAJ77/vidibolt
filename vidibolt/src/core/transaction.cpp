@@ -1,6 +1,7 @@
 #include <core/transaction.h>
 #include <util/timestamp.h>
 #include <crypto/sha256.h>
+#include "..\node\transaction.h"
 
 namespace Volt
 {
@@ -231,6 +232,11 @@ namespace Volt
 			lhs.GetRecipientKey() == rhs.GetRecipientKey() &&
 			lhs.GetSigniture() == rhs.GetSigniture() &&
 			lhs.GetTxHash() == rhs.GetTxHash();
+	}
+
+	ErrorCode BroadcastTransaction(Node& node, const Transaction& tx)
+	{
+		return ErrorCode();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

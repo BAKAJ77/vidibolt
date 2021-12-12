@@ -28,18 +28,14 @@ namespace Volt
 		// Operator overload for assignment operations.
 		VOLT_API void operator=(const MemPool& pool);
 
-		// Pushes given transaction into the mempool, the transaction given must be signed.
+		// Creates and initializes new regular transfer transaction, the created and initialized transaction object is returned.
+		// Potential errors are returned via the last parameter 'error'.
+		friend extern VOLT_API Transaction CreateNewTransaction(double amount, double fee, const ECKeyPair& senderKeyPair,
+			const ECKeyPair& recipientPublicKey, ErrorCode *error = nullptr);
+
+		// Pushes given transaction into the mempool, also note that the transaction given must be signed and valid.
 		// An error code is returned in the event of a failure occurring.
 		friend extern VOLT_API ErrorCode PushTransaction(MemPool& pool, const Chain& chain, const Transaction& tx);
-
-		// Pushes given transaction into the mempool, the transaction is automatically signed via the private key in the
-		// sender key pair object given.
-		// The key pair passed through the parameter 'senderKeyPair' must have both the public and private key of the sender.
-		// 
-		// If successful, the transaction hash is returned via the last parameter 'txHash'.
-		// An error code is returned in the event of a failure occurring.
-		friend extern VOLT_API ErrorCode PushTransaction(MemPool& pool, const Chain& chain, double amount, double fee, 
-			const ECKeyPair& senderKeyPair, const ECKeyPair& recipientPublicKey, std::string* txHash = nullptr);
 
 		// Pops the transaction at the specified index in the queue from the mempool then returns it.
 		friend extern VOLT_API Transaction PopTransactionAtIndex(MemPool& pool, size_t index);
