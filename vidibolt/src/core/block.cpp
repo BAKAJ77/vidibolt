@@ -113,6 +113,8 @@ namespace Volt
 		return this->impl->txs;
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	ErrorCode VerifyBlock(const Block& block, const Chain& chain)
 	{
 		// Check that all the transactions contained are valid
