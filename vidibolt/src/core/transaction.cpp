@@ -1,7 +1,6 @@
 #include <core/transaction.h>
 #include <util/timestamp.h>
 #include <crypto/sha256.h>
-#include "..\node\transaction.h"
 
 namespace Volt
 {
@@ -186,7 +185,7 @@ namespace Volt
 	void tag_invoke(json::value_from_tag, json::value& obj, const Transaction& tx)
 	{
 		obj = {
-			{ "type", (uint32_t)tx.GetType() },
+			{ "type", (int)tx.GetType() },
 			{ "id", tx.GetID() },
 			{ "sender", tx.GetSenderKey() },
 			{ "recipient", tx.GetRecipientKey() },
@@ -203,7 +202,7 @@ namespace Volt
 		const json::object& object = obj.as_object();
 
 		return Transaction {
-			(TransactionType)json::value_to<uint32_t>(obj.at("type")),
+			(TransactionType)json::value_to<int>(obj.at("type")),
 			json::value_to<uint64_t>(obj.at("id")),
 			json::value_to<double>(obj.at("amount")),
 			json::value_to<double>(obj.at("fee")),
@@ -232,11 +231,6 @@ namespace Volt
 			lhs.GetRecipientKey() == rhs.GetRecipientKey() &&
 			lhs.GetSigniture() == rhs.GetSigniture() &&
 			lhs.GetTxHash() == rhs.GetTxHash();
-	}
-
-	ErrorCode BroadcastTransaction(Node& node, const Transaction& tx)
-	{
-		return ErrorCode();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

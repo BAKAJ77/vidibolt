@@ -11,13 +11,16 @@ namespace Volt
 		NodeType type;
 		uint32_t port;
 		uint64_t guid, nodeNetworkID;
-		UnorderedMap<uint64_t, std::string> peerList; // <guid : uint64_t, address : std::string>
+		UnorderedMap<uint64_t, Peer> peerList; // <guid : uint64_t, address : std::string>
 
 		TCPClient client;
 		TCPServer server;
+		MemPool* mempool;
+		Chain* chain;
 	public:
-		Implementation(NodeType type, uint32_t port, uint64_t nodeNetworkID) :
-			type(type), client(port), server(port), port(port), guid(0), nodeNetworkID(nodeNetworkID)
+		Implementation(NodeType type, MemPool* mempool, Chain* chain, uint32_t port, uint64_t nodeNetworkID) :
+			type(type), client(port), server(port), port(port), guid(0), nodeNetworkID(nodeNetworkID), mempool(mempool),
+			chain(chain)
 		{
 			this->peerList.Reserve(64);
 		}
@@ -31,27 +34,27 @@ namespace Volt
 			responseMsg.header.id = MessageRepType::NODE_GUID_RESPONSE;
 			responseMsg.header.networkID = this->nodeNetworkID;
 
-			responseMsg << this->guid << peerRequestMsg.senderAddress;
+			responseMsg << this->guid << peerRequestMsg.senderAddress << (int)this->type;
 
 			// Push response message to be transmitted back to the peer who sent the request
 			return this->server.PushOutboundResponseMessage(peerRequestMsg, responseMsg);
 		}
 
-		void PushPeerNodeToList(const RecievedMessage& peerResponseMsg)
+		ErrorCode PushPeerNodeToList(const RecievedMessage& peerResponseMsg)
 		{
-			// The peers data in the response message is formatted as so: 
-			// [ [uint64_t] GUID, [std::string] IP-Address, [int] String Length ]
-			// All transmitted messages are constructed like stack containers and therefore store payload data contiguosly
-			// Therefore we can easily copy the payload data we recieved into their respective data type containers
-			uint64_t peerGUID;
-			std::string peerAddress;
-			peerAddress.resize(peerResponseMsg.transmittedMsg.header.sizeBytes - sizeof(uint64_t) - sizeof(int));
+			// The peers data in the response message is formatted as so :
+			// [ [uint64_t] GUID, [std::string] IP-Address, [int] Node Type ]
+			// Extract the data elements from the message data using the message iterator
 
-			memcpy(&peerGUID, peerResponseMsg.transmittedMsg.payload.data(), sizeof(uint64_t));
-			memcpy(peerAddress.data(), peerResponseMsg.transmittedMsg.payload.data() + sizeof(uint64_t),
-				peerAddress.size());
+			MessageIterator iterator = peerResponseMsg.transmittedMsg.GetIterator();
 
-			this->peerList.Insert(peerGUID, peerAddress);
+			const NodeType type = (NodeType)iterator.GetNextElementData<int>();
+			const std::string address = iterator.GetNextElementData<std::string>();
+			const uint64_t guid = iterator.GetNextElementData<uint64_t>();
+
+			// Insert peer node into the peer list
+			this->peerList.Insert(guid, { type, address });
+			return ErrorID::NONE;
 		}
 
 		ErrorCode HandleIncomingData()
@@ -72,6 +75,9 @@ namespace Volt
 						this->PushPeerNodeToList(msg);
 						break;
 					}
+
+					if (error)
+						return error;
 				}
 
 				// Pop the recieved message off the queue
@@ -92,25 +98,31 @@ namespace Volt
 						error = this->TransmitNodeGUIDData(msg);
 						break;
 					}
+
+					if (error)
+						return error;
 				}
 
 				// Pop the recieved message off the queue
 				this->server.GetInboundMessages().PopFrontElement();
 			}
 
-			return error;
+			return ErrorID::NONE;
 		}
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Node::Node(NodeType type, uint32_t port, uint64_t nodeNetworkID) :
-		impl(std::make_unique<Implementation>(type, port, nodeNetworkID))
-	{}
+	Node::Node(NodeType type, MemPool* mempool, Chain* chain, uint32_t port, uint64_t nodeNetworkID) :
+		impl(std::make_unique<Implementation>(type, mempool, chain, port, nodeNetworkID))
+	{
+		assert(!(type == NodeType::FULL && !chain)); // Valid chain object must be supplied for FULL nodes
+		assert(!(type == NodeType::SOLO_MINER && !mempool)); // Valid mempool object must be supplied for SOLO MINER nodes
+	}
 
 	Node::~Node() = default;
 
-	void Node::InitNode(uint64_t guid, const UnorderedMap<uint64_t, std::string>* peerList)
+	void Node::InitNode(uint64_t guid, const UnorderedMap<uint64_t, Peer>* peerList)
 	{
 		this->impl->guid = guid;
 
@@ -164,7 +176,7 @@ namespace Volt
 		return this->impl->nodeNetworkID;
 	}
 
-	const UnorderedMap<uint64_t, std::string>& Node::GetPeerList() const
+	const UnorderedMap<uint64_t, Peer>& Node::GetPeerList() const
 	{
 		return this->impl->peerList;
 	}
@@ -173,13 +185,6 @@ namespace Volt
 
 	ErrorCode AddPeerNode(Node& node, const std::string& ipAddress)
 	{
-		// Firstly, make sure the peer node isn't already in the node's peer list
-		for (uint32_t index = 0; index < node.GetPeerList().GetSize(); index++)
-		{
-			if (node.GetPeerList().GetElementAtIndex(index) == ipAddress)
-				return ErrorID::PEER_NODE_ALREADY_IN_PEER_LIST;
-		}
-
 		// Next, attempt to connect to the node
 		ErrorCode operationError;
 		operationError = node.GetClient().Connect(ipAddress);

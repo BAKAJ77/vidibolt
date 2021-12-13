@@ -5,6 +5,8 @@
 
 namespace Volt
 {
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	// Enumeration that represents the type of error that occured within the execution of a function.
 	enum class ErrorID : uint32_t
 	{
@@ -30,6 +32,7 @@ namespace Volt
 		TRANSACTION_HASH_INVALID = 20016,
 		RECIEVED_TRANSMITTED_DATA_INVALID = 20017,
 		PEER_NODE_ALREADY_IN_PEER_LIST = 20018,
+		RECIEVED_DATA_INCOMPLETE = 20019,
 
 		// OpenSSL related error codes
 		MESSAGE_EMPTY = 40000,
@@ -85,6 +88,8 @@ namespace Volt
 		WOULD_BLOCK_ERROR = 10035
 	};
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	// A class that wraps the ErrorID enumeration for easier error handling.
 	class ErrorCode
 	{
@@ -105,6 +110,8 @@ namespace Volt
 		// Typecast overload for conversions from ErrorCode to a ErrorID value.
 		VOLT_API operator ErrorID() const;
 	};
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 #endif
