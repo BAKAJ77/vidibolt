@@ -45,6 +45,12 @@ namespace Volt
 				this->vector.push_back(data);
 			}
 
+			void EmplaceBackElement(const Ty& data)
+			{
+				std::scoped_lock lock(this->mutex);
+				this->vector.emplace_back(data);
+			}
+
 			void PopBackElement()
 			{
 				std::scoped_lock lock(this->mutex);
@@ -132,6 +138,9 @@ namespace Volt
 		
 		// Appends the element to the back of the vector
 		VOLT_EXPORT void PushBackElement(const Ty& data);
+
+		// Emplaces the element to the back of the vector.
+		VOLT_EXPORT void EmplaceBackElement(const Ty& data);
 
 		// Removes the element at the back of the vector.
 		VOLT_EXPORT void PopBackElement();

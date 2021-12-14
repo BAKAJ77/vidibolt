@@ -24,6 +24,11 @@ namespace Volt
 		this->impl->PushBackElement(data);
 	}
 
+	template<typename Ty> void Vector<Ty>::EmplaceBackElement(const Ty& data)
+	{
+		this->impl->EmplaceBackElement(data);
+	}
+
 	template<typename Ty> void Vector<Ty>::PopBackElement()
 	{
 		this->impl->PopBackElement();
