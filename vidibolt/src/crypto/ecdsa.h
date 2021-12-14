@@ -20,10 +20,16 @@ namespace Volt
 		EVP_PKEY_CTX* keyGenCtx;
 		EVP_PKEY* keyPair;
 	private:
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		// These functions are defined and implemented elsewhere but rely on access to private members of this class
+
 		friend VOLT_API ErrorCode GetSignedSHA256Digest(const std::vector<uint8_t>& message, const ECKeyPair& key,
 			std::vector<uint8_t>& signitureDigestOutput);
 		friend VOLT_API ErrorCode VerifySHA256Digest(const std::vector<uint8_t>& originalMessage, const ECKeyPair& key,
 			const std::vector<uint8_t>& signiture);
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public:
 		// Call this constructor if you want a public and private key to be generated automatically.
 		// Also, errors can be caught through passing a pointer to a ErrorCode object via the only parameter 'error'.
