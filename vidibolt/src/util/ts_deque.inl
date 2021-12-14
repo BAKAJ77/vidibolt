@@ -2,86 +2,86 @@
 
 namespace Volt
 {
-	template <typename T> Deque<T>::Deque() :
-		impl(std::make_unique<Implementation<T>>())
+	template <typename Ty> Deque<Ty>::Deque() :
+		impl(std::make_unique<Implementation<Ty>>())
 	{}
 
-	template <typename T> Deque<T>::Deque(const Deque<T>& other) :
-		impl(std::make_unique<Implementation<T>>(*other.impl))
+	template <typename Ty> Deque<Ty>::Deque(const Deque<Ty>& other) :
+		impl(std::make_unique<Implementation<Ty>>(*other.impl))
 	{}
 
-	template<typename T>
-	Deque<T>::Deque(const std::deque<T>& deque) :
-		impl(std::make_unique<Implementation<T>>(deque))
+	template<typename Ty>
+	Deque<Ty>::Deque(const std::deque<Ty>& deque) :
+		impl(std::make_unique<Implementation<Ty>>(deque))
 	{}
 
-	template <typename T> void Deque<T>::operator=(const Deque<T>& other)
+	template <typename Ty> void Deque<Ty>::operator=(const Deque<Ty>& other)
 	{
-		this->impl = std::make_unique<Implementation<T>>(*other.impl);
+		this->impl = std::make_unique<Implementation<Ty>>(*other.impl);
 	}
 
-	template <typename T> void Deque<T>::PushBackElement(const T& data)
+	template <typename Ty> void Deque<Ty>::PushBackElement(const Ty& data)
 	{
 		this->impl->PushBackElement(data);
 	}
 
-	template <typename T> void Deque<T>::PushFrontElement(const T& data)
+	template <typename Ty> void Deque<Ty>::PushFrontElement(const Ty& data)
 	{
 		this->impl->PushFrontElement(data);
 	}
 
-	template <typename T> void Deque<T>::ClearElements()
+	template <typename Ty> void Deque<Ty>::ClearElements()
 	{
 		this->impl->ClearElements();
 	}
 
-	template <typename T> void Deque<T>::PopFrontElement()
+	template <typename Ty> void Deque<Ty>::PopFrontElement()
 	{
 		this->impl->PopFrontElement();
 	}
 
-	template <typename T> void Deque<T>::PopBackElement()
+	template <typename Ty> void Deque<Ty>::PopBackElement()
 	{
 		this->impl->PopBackElement();
 	}
 
-	template <typename T> void Deque<T>::PopElementAtIndex(size_t index)
+	template <typename Ty> void Deque<Ty>::PopElementAtIndex(size_t index)
 	{
 		this->impl->PopElementAtIndex(index);
 	}
 
-	template <typename T> const T& Deque<T>::GetFrontElement() const
+	template <typename Ty> const Ty& Deque<Ty>::GetFrontElement() const
 	{
 		return this->impl->GetFrontElement();
 	}
 
-	template <typename T> const T& Deque<T>::GetBackElement() const
+	template <typename Ty> const Ty& Deque<Ty>::GetBackElement() const
 	{
 		return this->impl->GetBackElement();
 	}
 
-	template <typename T> bool Deque<T>::IsEmpty() const
+	template <typename Ty> bool Deque<Ty>::IsEmpty() const
 	{
 		return this->impl->IsEmpty();
 	}
 
-	template <typename T> size_t Deque<T>::GetSize() const
+	template <typename Ty> size_t Deque<Ty>::GetSize() const
 	{
 		return this->impl->GetSize();
 	}
 
-	template<typename T>
-	const std::deque<T>& Deque<T>::GetDequeObject() const
+	template<typename Ty>
+	const std::deque<Ty>& Deque<Ty>::GetDequeObject() const
 	{
 		return this->impl->GetDequeObject();
 	}
 
-	template <typename T> T& Deque<T>::operator[](size_t index)
+	template <typename Ty> Ty& Deque<Ty>::operator[](size_t index)
 	{
 		return (*this->impl)[index];
 	}
 
-	template <typename T> const T& Deque<T>::operator[](size_t index) const
+	template <typename Ty> const Ty& Deque<Ty>::operator[](size_t index) const
 	{
 		return (*this->impl)[index];
 	}

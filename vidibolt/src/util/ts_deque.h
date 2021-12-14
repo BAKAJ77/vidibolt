@@ -12,7 +12,7 @@ namespace Volt
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// A double ended queue class that wraps the std::deque operations with locks for increased thread safety.
-	template<typename T> class Deque
+	template<typename Ty> class Deque
 	{
 	private:
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,21 +123,21 @@ namespace Volt
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
-		std::unique_ptr<Implementation<T>> impl;
+		std::unique_ptr<Implementation<Ty>> impl;
 	public:
 		VOLT_EXPORT Deque();
-		VOLT_EXPORT Deque(const Deque<T>& other);
-		VOLT_EXPORT Deque(const std::deque<T>& deque);
+		VOLT_EXPORT Deque(const Deque<Ty>& other);
+		VOLT_EXPORT Deque(const std::deque<Ty>& deque);
 
 		VOLT_EXPORT ~Deque() = default;
 
-		VOLT_EXPORT void operator=(const Deque<T>& other);
+		VOLT_EXPORT void operator=(const Deque<Ty>& other);
 
 		// Pushes element to the back of the queue.
-		VOLT_EXPORT void PushBackElement(const T& data);
+		VOLT_EXPORT void PushBackElement(const Ty& data);
 
 		// Pushes element to the front of the queue.
-		VOLT_EXPORT void PushFrontElement(const T& data);
+		VOLT_EXPORT void PushFrontElement(const Ty& data);
 
 		// Clears out the queue of all elements it contains.
 		VOLT_EXPORT void ClearElements();
@@ -152,10 +152,10 @@ namespace Volt
 		VOLT_EXPORT void PopElementAtIndex(size_t index);
 
 		// Returns the element at the front of the queue.
-		VOLT_EXPORT const T& GetFrontElement() const;
+		VOLT_EXPORT const Ty& GetFrontElement() const;
 
 		// Returns the element at the back of the queue.
-		VOLT_EXPORT const T& GetBackElement() const;
+		VOLT_EXPORT const Ty& GetBackElement() const;
 
 		// Returns TRUE if the queue is empty, else if it's not then FALSE is returned.
 		VOLT_EXPORT bool IsEmpty() const;
@@ -164,13 +164,13 @@ namespace Volt
 		VOLT_EXPORT size_t GetSize() const;
 
 		// Operator overload that returns the element at the index specified.
-		VOLT_EXPORT T& operator[](size_t index);
+		VOLT_EXPORT Ty& operator[](size_t index);
 
 		// Operator overload that returns the element at the index specified.
-		VOLT_EXPORT const T& operator[](size_t index) const;
+		VOLT_EXPORT const Ty& operator[](size_t index) const;
 
 		// Returns the underlying deque object that is wrapped by the class
-		VOLT_EXPORT const std::deque<T>& GetDequeObject() const;
+		VOLT_EXPORT const std::deque<Ty>& GetDequeObject() const;
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
