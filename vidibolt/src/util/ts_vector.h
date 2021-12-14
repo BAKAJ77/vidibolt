@@ -39,6 +39,12 @@ namespace Volt
 				this->vector = impl.vector;
 			}
 
+			void Reserve(size_t numElements)
+			{
+				std::scoped_lock lock(this->mutex);
+				this->vector.reserve(numElements);
+			}
+
 			void PushBackElement(const Ty& data)
 			{
 				std::scoped_lock lock(this->mutex);
@@ -136,6 +142,9 @@ namespace Volt
 
 		VOLT_EXPORT void operator=(const Vector<Ty>& other);
 		
+		// Allocates memory thats enough to store specified number of elements.
+		VOLT_EXPORT void Reserve(size_t numElements);
+
 		// Appends the element to the back of the vector
 		VOLT_EXPORT void PushBackElement(const Ty& data);
 

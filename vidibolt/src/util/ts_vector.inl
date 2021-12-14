@@ -19,6 +19,11 @@ namespace Volt
 		this->impl = std::make_unique<Implementation<Ty>>(*other.impl);
 	}
 
+	template<typename Ty> void Vector<Ty>::Reserve(size_t numElements)
+	{
+		this->impl->Reserve(numElements);
+	}
+
 	template<typename Ty> void Vector<Ty>::PushBackElement(const Ty& data)
 	{
 		this->impl->PushBackElement(data);
