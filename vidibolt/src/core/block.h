@@ -1,13 +1,13 @@
 #ifndef VIDIBOLT_CORE_BLOCK_H
 #define VIDIBOLT_CORE_BLOCK_H
 
-#include <util/volt_api.h>
 #include <core/transaction.h>
+#include <util/volt_api.h>
+#include <util/ts_vector.h>
 
 #include <boost/json.hpp>
 #include <functional>
 #include <string>
-#include <vector>
 #include <memory>
 
 using namespace boost;
@@ -28,7 +28,7 @@ namespace Volt
 	public:
 		VOLT_API Block();
 		VOLT_API Block(const Block& block);
-		VOLT_API Block(uint32_t index, const std::string& prevHash, const std::vector<Transaction>& txs,
+		VOLT_API Block(uint32_t index, const std::string& prevHash, const Vector<Transaction>& txs,
 			uint64_t difficulty, const std::string& blockHash = "", uint64_t timestamp = 0, uint64_t nonce = 0);
 
 		VOLT_API ~Block();
@@ -97,7 +97,7 @@ namespace Volt
 		VOLT_API const std::string& GetBlockHash() const;
 
 		// Returns the transactions contained in the block.
-		VOLT_API const std::vector<Transaction>& GetTransactions() const;
+		VOLT_API const Vector<Transaction>& GetTransactions() const;
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -16,14 +16,14 @@ namespace Volt
 		uint32_t index;
 		uint64_t timestamp, difficulty, nonce;
 		std::string previousHash, hash;
-		std::vector<Transaction> txs;
+		Vector<Transaction> txs;
 	public:
 		Implementation() :
 			index(0), timestamp(0), nonce(0), difficulty(0)
 		{}
 
 		Implementation(uint32_t index, uint64_t timestamp, const std::string& prevHash, 
-			const std::vector<Transaction>& txs, const std::string& blockHash, uint64_t difficulty, 
+			const Vector<Transaction>& txs, const std::string& blockHash, uint64_t difficulty, 
 			uint64_t nonce) :
 			index(index), timestamp(timestamp), previousHash(prevHash), txs(txs), hash(blockHash), nonce(nonce), 
 			difficulty(difficulty)
@@ -43,7 +43,7 @@ namespace Volt
 			block.GetTransactions(), block.GetBlockHash(), block.GetDifficulty(), block.GetNonce()))
 	{}
 
-	Block::Block(uint32_t index, const std::string& prevHash, const std::vector<Transaction>& txs, 
+	Block::Block(uint32_t index, const std::string& prevHash, const Vector<Transaction>& txs, 
 		uint64_t difficulty, const std::string& blockHash, uint64_t timestamp, uint64_t nonce) :
 		impl(std::make_unique<Implementation>(index, timestamp, prevHash, txs, blockHash, difficulty, nonce))
 	{}
@@ -60,8 +60,8 @@ namespace Volt
 	{
 		// Combine the data of all transactions into one string of data
 		std::string combinedTxsData;
-		for (const Transaction& tx : this->impl->txs)
-			combinedTxsData += Volt::SerializeTransaction(tx);
+		for (uint32_t index = 0; index < this->impl->txs.GetSize(); index++)
+			combinedTxsData += Volt::SerializeTransaction(this->impl->txs[index]);
 
 		// Combine all block data into one string, then convert string data into byte vector array
 		const std::string blockData = std::to_string(this->impl->index) + std::to_string(this->impl->nonce) + 
@@ -108,7 +108,7 @@ namespace Volt
 		return this->impl->hash;
 	}
 
-	const std::vector<Transaction>& Block::GetTransactions() const
+	const Vector<Transaction>& Block::GetTransactions() const
 	{
 		return this->impl->txs;
 	}
@@ -121,8 +121,10 @@ namespace Volt
 		double totalFees = 0;
 
 		// Check that all the transactions contained are valid
-		for (const Transaction& tx : block.impl->txs)
+		for (uint32_t index = 0; index < block.impl->txs.GetSize(); index++)
 		{
+			const Transaction& tx = block.impl->txs[index];
+
 			// Get the mining reward transaction for the next block verification step
 			if (tx.GetType() == TransactionType::MINING_REWARD)
 				miningRewardTx = &tx;
@@ -160,7 +162,7 @@ namespace Volt
 		}
 		else
 		{
-			const Block& genesisBlock = chain.GetBlockChain().front();
+			const Block& genesisBlock = chain.GetBlockChain().GetFrontElement();
 			if (genesisBlock != Volt::GetGenesisBlock())
 				return ErrorID::GENESIS_BLOCK_INVALID;
 		}
@@ -236,7 +238,7 @@ namespace Volt
 				chain.GetMiningRewardAmount() + totalFees, 0, Volt::GetTimeSinceEpoch(), "", 
 				minerPublicKey->GetPublicKeyHex());
 
-			block.impl->txs.emplace_back(tx);
+			block.impl->txs.EmplaceBackElement(tx);
 		}
 
 		return block;
@@ -394,7 +396,7 @@ namespace Volt
 			{ "nonce", block.GetNonce() },
 			{ "previousHash", block.GetPreviousBlockHash() },
 			{ "hash", block.GetBlockHash() },
-			{ "transactions", block.GetTransactions() }
+			{ "transactions", block.GetTransactions().GetVectorObject() }
 		};
 	}
 

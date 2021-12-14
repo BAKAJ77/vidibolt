@@ -10,7 +10,7 @@ namespace Volt
 	class Chain::Implementation
 	{
 	public:
-		std::vector<Block> blockChain;
+		Vector<Block> blockChain;
 	public:
 		Implementation() :
 			blockChain({ Volt::GetGenesisBlock() })
@@ -20,7 +20,7 @@ namespace Volt
 			blockChain(impl.blockChain)
 		{}
 
-		Implementation(const std::vector<Block>& blockChain) :
+		Implementation(const Vector<Block>& blockChain) :
 			blockChain(blockChain)
 		{}
 
@@ -42,7 +42,7 @@ namespace Volt
 		impl(std::make_unique<Implementation>(*chain.impl))
 	{}
 
-	Chain::Chain(const std::vector<Block>& blockChain) :
+	Chain::Chain(const Vector<Block>& blockChain) :
 		impl(std::make_unique<Implementation>(blockChain))
 	{}
 
@@ -55,7 +55,7 @@ namespace Volt
 
 	const Block& Chain::GetLatestBlock() const
 	{
-		return this->impl->blockChain.back();
+		return this->impl->blockChain.GetBackElement();
 	}
 
 	const Block& Chain::GetBlockAtIndexHeight(uint32_t blockIndex) const
@@ -63,7 +63,7 @@ namespace Volt
 		return this->impl->blockChain[blockIndex];
 	}
 
-	const std::vector<Block>& Chain::GetBlockChain() const
+	const Vector<Block>& Chain::GetBlockChain() const
 	{
 		return this->impl->blockChain;
 	}
@@ -72,12 +72,14 @@ namespace Volt
 	{
 		double balance = 0;
 
-		for (uint32_t blockIndex = 0; blockIndex < this->impl->blockChain.size(); blockIndex++)
+		for (uint32_t blockIndex = 0; blockIndex < this->impl->blockChain.GetSize(); blockIndex++)
 		{
 			const Block& block = this->impl->blockChain[blockIndex];
 
-			for (const Transaction& tx : block.GetTransactions())
+			for (uint32_t txIndex = 0; txIndex < block.GetTransactions().GetSize(); txIndex++)
 			{
+				const Transaction& tx = block.GetTransactions()[txIndex];
+
 				if (publicKey.GetPublicKeyHex() == tx.GetSenderKey())
 					balance -= (tx.GetAmount() + tx.GetFee());
 				else if (publicKey.GetPublicKeyHex() == tx.GetRecipientKey())
@@ -101,12 +103,12 @@ namespace Volt
 
 	uint32_t Chain::GetLatestBlockHeight() const
 	{
-		return (uint32_t)(this->impl->blockChain.size() - 1);
+		return (uint32_t)(this->impl->blockChain.GetSize() - 1);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Chain CreateExistingChain(const std::vector<Block>& blockChain)
+	Chain CreateExistingChain(const Vector<Block>& blockChain)
 	{
 		return Chain(blockChain);
 	}
@@ -124,7 +126,7 @@ namespace Volt
 
 		ErrorCode error = Volt::VerifyBlock(block, chain);
 		if (!error)
-			chain.impl->blockChain.emplace_back(block);
+			chain.impl->blockChain.EmplaceBackElement(block);
 
 		return error;
 	}
@@ -135,7 +137,7 @@ namespace Volt
 		if (chain.GetLatestBlockHeight() < 1)
 			return ErrorID::CHAIN_EMPTY;
 
-		for (uint32_t blockIndex = 0; blockIndex < (uint32_t)chain.impl->blockChain.size(); blockIndex++)
+		for (uint32_t blockIndex = 0; blockIndex < (uint32_t)chain.impl->blockChain.GetSize(); blockIndex++)
 		{
 			const Block& block = chain.impl->blockChain[blockIndex];
 
@@ -155,7 +157,7 @@ namespace Volt
 		uint64_t timestamp = Volt::ConvertHexToUint(timestampHex);
 
 		// Attempt to find the transaction matching the hash given
-		for (uint32_t blockIndex = 0; blockIndex < (uint32_t)chain.impl->blockChain.size(); blockIndex++)
+		for (uint32_t blockIndex = 0; blockIndex < (uint32_t)chain.impl->blockChain.GetSize(); blockIndex++)
 		{
 			const Block& block = chain.impl->blockChain[blockIndex];
 
@@ -163,8 +165,10 @@ namespace Volt
 			// So we skip blocks that existed before the transaction did.
 			if (block.GetTimestamp() >= timestamp)
 			{
-				for (const Transaction& tx : block.GetTransactions())
+				for (uint32_t txIndex = 0; txIndex < block.GetTransactions().GetSize(); txIndex++)
 				{
+					const Transaction& tx = block.GetTransactions()[txIndex];
+
 					if (tx.GetTxHash() == txHash)
 					{
 						returnedTx = tx;
@@ -204,7 +208,7 @@ namespace Volt
 	void tag_invoke(json::value_from_tag, json::value& obj, const Chain& chain)
 	{
 		obj = {
-			{ "blocks", chain.GetBlockChain() }
+			{ "blocks", chain.GetBlockChain().GetVectorObject() }
 		};
 	}
 

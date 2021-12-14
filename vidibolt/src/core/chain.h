@@ -19,7 +19,7 @@ namespace Volt
 		class Implementation;
 		std::unique_ptr<Implementation> impl;
 	private:
-		VOLT_API Chain(const std::vector<Block>& blockChain);
+		VOLT_API Chain(const Vector<Block>& blockChain);
 	public:
 		VOLT_API Chain();
 		VOLT_API Chain(const Chain& chain);
@@ -30,7 +30,7 @@ namespace Volt
 		VOLT_API void operator=(const Chain& chain);
 
 		// Creates new chain object initialized with the given existing vector array of blocks (aka blockchain).
-		friend extern VOLT_API Chain CreateExistingChain(const std::vector<Block>& blockChain);
+		friend extern VOLT_API Chain CreateExistingChain(const Vector<Block>& blockChain);
 
 		// Checks if the block is valid, then appends it to the stored chain if it's valid.
 		// An error code is returned in the event of a failure occurring.
@@ -54,7 +54,7 @@ namespace Volt
 		VOLT_API const Block& GetBlockAtIndexHeight(uint32_t blockIndex) const;
 
 		// Returns a vector array of the entire stored blockchain.
-		VOLT_API const std::vector<Block>& GetBlockChain() const;
+		VOLT_API const Vector<Block>& GetBlockChain() const;
 
 		// Returns the amount of coins currently being held by a public key address
 		VOLT_API double GetAddressBalance(const ECKeyPair& publicKey) const;

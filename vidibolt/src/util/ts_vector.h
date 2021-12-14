@@ -111,7 +111,7 @@ namespace Volt
 				return this->vector[index];
 			}
 
-			const Ty& operator[](size_t index)
+			const Ty& operator[](size_t index) const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->vector[index];

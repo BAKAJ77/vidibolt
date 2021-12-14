@@ -81,6 +81,6 @@ namespace Volt
 
 	template<typename Ty> const std::vector<Ty>& Vector<Ty>::GetVectorObject() const
 	{
-		return this->impl->vector;
+		return this->impl->GetVectorObject();
 	}
 }
