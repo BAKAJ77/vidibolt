@@ -16,24 +16,24 @@ namespace Volt
 	private:
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		template<typename K, typename T> class Implementation
+		template<typename Key, typename Ty> class Implementation
 		{
 		private:
-			std::unordered_map<K, T> map;
+			std::unordered_map<Key, Ty> map;
 			mutable std::mutex mutex;
 		public:
 			Implementation() = default;
-			Implementation(const Implementation<K, T>& other) :
+			Implementation(const Implementation<Key, Ty>& other) :
 				map(other.map)
 			{}
 
-			Implementation(const std::unordered_map<K, T>& map) :
+			Implementation(const std::unordered_map<Key, Ty>& map) :
 				map(map)
 			{}
 
 			~Implementation() = default;
 
-			void operator=(const Implementation<K, T>& other)
+			void operator=(const Implementation<Key, Ty>& other)
 			{
 				this->map = other.map;
 			}
@@ -44,19 +44,19 @@ namespace Volt
 				this->map.reserve(count);
 			}
 
-			void Insert(const K& key, const T& data)
+			void Insert(const Key& key, const Ty& data)
 			{
 				std::scoped_lock lock(this->mutex);
 				this->map.insert(std::make_pair(key, data));
 			}
 
-			void Emplace(const K& key, const T& data)
+			void Emplace(const Key& key, const Ty& data)
 			{
 				std::scoped_lock lock(this->mutex);
 				this->map.emplace(std::make_pair(key, data));
 			}
 
-			void Erase(const K& key)
+			void Erase(const Key& key)
 			{
 				std::scoped_lock lock(this->mutex);
 				this->map.erase(key);
@@ -68,19 +68,19 @@ namespace Volt
 				this->map.clear();
 			}
 
-			T& GetElement(const K& key)
+			Ty& GetElement(const Key& key)
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->map.at(key);
 			}
 
-			const T& GetElement(const K& key) const
+			const Ty& GetElement(const Key& key) const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->map.at(key);
 			}
 
-			T& GetElementAtIndex(size_t indexPos)
+			Ty& GetElementAtIndex(size_t indexPos)
 			{
 				std::scoped_lock lock(this->mutex);
 				auto it = this->map.begin();
@@ -89,7 +89,7 @@ namespace Volt
 				return it->second;
 			}
 
-			const T& GetElementAtIndex(size_t indexPos) const
+			const Ty& GetElementAtIndex(size_t indexPos) const
 			{
 				std::scoped_lock lock(this->mutex);
 				auto it = this->map.begin();
@@ -98,7 +98,7 @@ namespace Volt
 				return it->second;
 			}
 
-			bool ElementExists(const K& key) const
+			bool ElementExists(const Key& key) const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->map.find(key) != this->map.end() ? true : false;
@@ -116,19 +116,19 @@ namespace Volt
 				return this->map.empty();
 			}
 
-			T& operator[](const K& key)
+			Ty& operator[](const Key& key)
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->map[key];
 			}
 
-			const T& operator[](const K& key) const
+			const Ty& operator[](const Key& key) const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->map[key];
 			}
 
-			const std::unordered_map<K, T>& GetUnorderedMapObject() const
+			const std::unordered_map<Key, Ty>& GetUnorderedMapObject() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->map;

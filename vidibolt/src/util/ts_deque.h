@@ -3,6 +3,8 @@
 
 #include <util/volt_api.h>
 
+#include <iterator>
+#include <cstddef>
 #include <memory>
 #include <deque>
 #include <mutex>
@@ -17,35 +19,35 @@ namespace Volt
 	private:
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		template<typename U> class Implementation
+		template<typename Ty> class Implementation
 		{
 		private:
-			std::deque<U> deque;
+			std::deque<Ty> deque;
 			mutable std::mutex mutex;
 		public:
 			Implementation() = default;
-			Implementation(const Implementation<U>& other) :
+			Implementation(const Implementation<Ty>& other) :
 				deque(other.deque)
 			{}
 
-			Implementation(const std::deque<U>& deque) :
+			Implementation(const std::deque<Ty>& deque) :
 				deque(deque)
 			{}
 
 			~Implementation() = default;
 
-			void operator=(const Implementation<U>& other)
+			void operator=(const Implementation<Ty>& other)
 			{
 				this->deque = other.deque;
 			}
 
-			void PushBackElement(const U& data)
+			void PushBackElement(const Ty& data)
 			{
 				std::scoped_lock lock(this->mutex);
 				this->deque.push_back(data);
 			}
 
-			void PushFrontElement(const U& data)
+			void PushFrontElement(const Ty& data)
 			{
 				std::scoped_lock lock(this->mutex);
 				this->deque.push_front(data);
@@ -78,13 +80,13 @@ namespace Volt
 				this->deque.erase(elementLoc);
 			}
 
-			const U& GetFrontElement() const
+			const Ty& GetFrontElement() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->deque.front();
 			}
 
-			const U& GetBackElement() const
+			const Ty& GetBackElement() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->deque.back();
@@ -102,19 +104,19 @@ namespace Volt
 				return this->deque.size();
 			}
 
-			U& operator[](size_t index)
+			Ty& operator[](size_t index)
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->deque[index];
 			}
 
-			const U& operator[](size_t index) const
+			const Ty& operator[](size_t index) const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->deque[index];
 			}
 
-			const std::deque<U>& GetDequeObject() const
+			const std::deque<Ty>& GetDequeObject() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->deque;
@@ -169,8 +171,14 @@ namespace Volt
 		// Operator overload that returns the element at the index specified.
 		VOLT_EXPORT const Ty& operator[](size_t index) const;
 
-		// Returns the underlying deque object that is wrapped by the class
+		// Returns the underlying deque object that is wrapped by the class.
 		VOLT_EXPORT const std::deque<Ty>& GetDequeObject() const;
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

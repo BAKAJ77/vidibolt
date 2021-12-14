@@ -17,29 +17,29 @@ namespace Volt
 	private:
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		template<typename U> class Implementation
+		template<typename Ty> class Implementation
 		{
 		private:
-			std::vector<U> vector;
+			std::vector<Ty> vector;
 			mutable std::mutex mutex;
 		public:
 			Implementation() = default;
-			Implementation(const Implementation<U>& impl) :
+			Implementation(const Implementation<Ty>& impl) :
 				vector(impl.vector)
 			{}
 
-			Implementation(const std::vector<U>& vector) :
+			Implementation(const std::vector<Ty>& vector) :
 				vector(vector)
 			{}
 
 			~Implementation() = default;
 
-			void operator=(const Implementation<U>& impl)
+			void operator=(const Implementation<Ty>& impl)
 			{
 				this->vector = impl.vector;
 			}
 
-			void PushBackElement(const U& data)
+			void PushBackElement(const Ty& data)
 			{
 				std::scoped_lock lock(this->mutex);
 				this->vector.push_back(data);
@@ -57,7 +57,7 @@ namespace Volt
 				this->vector.clear();
 			}
 
-			void InsertElementAtIndex(const U& data, size_t index)
+			void InsertElementAtIndex(const Ty& data, size_t index)
 			{
 				std::scoped_lock lock(this->mutex);
 				auto elementLoc = this->vector.begin();
@@ -75,13 +75,13 @@ namespace Volt
 				this->vector.erase(elementLoc);
 			}
 
-			const U& GetFrontElement() const
+			const Ty& GetFrontElement() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->vector.front();
 			}
 
-			const U& GetBackElement() const
+			const Ty& GetBackElement() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->vector.back();
@@ -99,19 +99,19 @@ namespace Volt
 				return this->vector.size();
 			}
 
-			U& operator[](size_t index)
+			Ty& operator[](size_t index)
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->vector[index];
 			}
 
-			const U& operator[](size_t index)
+			const Ty& operator[](size_t index)
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->vector[index];
 			}
 
-			const std::vector<U>& GetVectorObject() const
+			const std::vector<Ty>& GetVectorObject() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->vector;
