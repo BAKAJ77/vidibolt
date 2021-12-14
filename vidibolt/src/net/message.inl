@@ -4,8 +4,7 @@ namespace Volt
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	template<typename Ty>
-	Message& operator<<(Message& message, const Ty& data)
+	template<typename Ty> Message& operator<<(Message& message, const Ty& data)
 	{
 		// Make sure the data given is trivially copyable
 		static_assert(std::is_standard_layout<Ty>::value, "The data cannot be copied trivially");
@@ -23,8 +22,7 @@ namespace Volt
 		return message; // We return a reference to the message so the operator can be chained
 	}
 
-	template<typename Ty>
-	Message& operator>>(Message& message, Ty& data)
+	template<typename Ty> Message& operator>>(Message& message, Ty& data)
 	{
 		// Make sure the data given is trivially copyable
 		static_assert(std::is_standard_layout<Ty>::value, "The data cannot be copied trivially");
@@ -42,15 +40,13 @@ namespace Volt
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	template<typename Ty>
-	RecievedMessage& operator<<(RecievedMessage& message, const Ty& data)
+	template<typename Ty> RecievedMessage& operator<<(RecievedMessage& message, const Ty& data)
 	{
 		message.transmittedMsg << data;
 		return message;
 	}
 
-	template<typename Ty>
-	RecievedMessage& operator>>(RecievedMessage& message, Ty& data)
+	template<typename Ty> RecievedMessage& operator>>(RecievedMessage& message, Ty& data)
 	{
 		message.transmittedMsg >> data;
 		return message;
@@ -58,8 +54,7 @@ namespace Volt
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	template<typename Ty>
-	Ty MessageIterator::GetNextElementData()
+	template<typename Ty> Ty MessageIterator::GetNextElementData()
 	{
 		// Make sure the data given is trivially copyable
 		static_assert(std::is_standard_layout<Ty>::value, "The data cannot be copied trivially");
@@ -72,8 +67,7 @@ namespace Volt
 		return *data;
 	}
 
-	template<>
-	std::string MessageIterator::GetNextElementData<std::string>()
+	template<> std::string MessageIterator::GetNextElementData<std::string>()
 	{
 		// Get the length of the string
 		int stringLen = 0;

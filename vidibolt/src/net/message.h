@@ -82,14 +82,12 @@ namespace Volt
 		// An operator overload for seamless pushing of data into the message struct container.
 		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
 		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		template<typename Ty>
-		friend extern VOLT_EXPORT Message& operator<<(Message& message, const Ty& data);
+		template<typename Ty> friend extern VOLT_EXPORT Message& operator<<(Message& message, const Ty& data);
 
 		// An operator overload for seamless extracting of data from the message struct container.
 		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
 		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		template<typename Ty>
-		friend extern VOLT_EXPORT Message& operator>>(Message& message, Ty& data);
+		template<typename Ty> friend extern VOLT_EXPORT Message& operator>>(Message& message, Ty& data);
 
 		// An operator overload for seamless pushing of data into the message struct container.
 		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
@@ -126,14 +124,12 @@ namespace Volt
 		// An operator overload for seamless pushing of data into the message struct container.
 		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
 		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		template<typename Ty>
-		friend extern VOLT_EXPORT RecievedMessage& operator<<(RecievedMessage& message, const Ty& data);
+		template<typename Ty> friend extern VOLT_EXPORT RecievedMessage& operator<<(RecievedMessage& message, const Ty& data);
 
 		// An operator overload for seamless extracting of data from the message struct container.
 		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
 		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
-		template<typename Ty>
-		friend extern VOLT_EXPORT RecievedMessage& operator>>(RecievedMessage& message, Ty& data);
+		template<typename Ty> friend extern VOLT_EXPORT RecievedMessage& operator>>(RecievedMessage& message, Ty& data);
 
 		// An operator overload for seamless pushing of data into the message struct container.
 		// This struct acts like a stack so data should be pulled in the reverse order that it was pushed for example
