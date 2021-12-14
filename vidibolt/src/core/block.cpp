@@ -117,12 +117,29 @@ namespace Volt
 
 	ErrorCode VerifyBlock(const Block& block, const Chain& chain)
 	{
+		const Transaction* miningRewardTx = nullptr;
+		double totalFees = 0;
+
 		// Check that all the transactions contained are valid
 		for (const Transaction& tx : block.impl->txs)
 		{
+			// Get the mining reward transaction for the next block verification step
+			if (tx.GetType() == TransactionType::MINING_REWARD)
+				miningRewardTx = &tx;
+
+			// Verify the transaction hash and signiture
 			ErrorCode error = Volt::VerifyTransaction(tx);
 			if (error)
 				return error;
+
+			totalFees += tx.GetFee();
+		}
+
+		// Check that the mining reward transaction rewards the right amount of coins
+		if (miningRewardTx)
+		{
+			if (miningRewardTx->GetAmount() != (chain.GetMiningRewardAmount(block.GetIndex()) + totalFees))
+				return ErrorID::BLOCK_MINING_REWARD_INVALID;
 		}
 
 		// Check that the previous hash stored in the block is correct and the timestamp make sense 

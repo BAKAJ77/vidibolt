@@ -60,7 +60,7 @@ namespace Volt
 		VOLT_API double GetAddressBalance(const ECKeyPair& publicKey) const;
 
 		// Returns the current mining reward amount.
-		VOLT_API double GetMiningRewardAmount() const;
+		VOLT_API double GetMiningRewardAmount(uint32_t atBlockIndex = UINT32_MAX) const;
 
 		// Returns the height index of the latest block in the chain.
 		VOLT_API uint32_t GetLatestBlockHeight() const;

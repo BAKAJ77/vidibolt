@@ -22,9 +22,7 @@ namespace Volt
 
 		Implementation(const std::vector<Block>& blockChain) :
 			blockChain(blockChain)
-		{
-			assert(!blockChain.empty()); // The blockchain must always have at least a genesis block in it
-		}
+		{}
 
 		~Implementation() = default;
 
@@ -90,11 +88,13 @@ namespace Volt
 		return balance;
 	}
 
-	double Chain::GetMiningRewardAmount() const
+	double Chain::GetMiningRewardAmount(uint32_t atBlockIndex) const
 	{
+		uint32_t blockHeight = (atBlockIndex == UINT32_MAX ? (this->GetLatestBlockHeight() + 1) : (atBlockIndex + 1));
+
 		constexpr double base = 75, decreaseFactor = 1.5;
 		constexpr int decreaseRate = 3435000; // Decrease mining reward by the decrease factor every 3,435,000 blocks
-		const int epochs = (int)(this->GetLatestBlockHeight() + 1) / decreaseRate;
+		const int epochs = (int)(blockHeight) / decreaseRate;
 
 		return std::max(base / std::pow(decreaseFactor, epochs), 0.3);
 	}

@@ -47,9 +47,10 @@ namespace Volt
 	// An enumeration which holds the purpose of indicating what type of message is being sent/recieved.
 	enum class MessageRepType : uint32_t
 	{
-		TRANSACTION_BROADCAST,
 		NODE_GUID_REQUEST,
-		NODE_GUID_RESPONSE
+		NODE_GUID_RESPONSE,
+		ADDRESS_AMOUNT_REQUEST,
+		ADDRESS_AMOUNT_RESPONSE
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

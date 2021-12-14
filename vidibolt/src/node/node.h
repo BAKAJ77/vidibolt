@@ -17,15 +17,19 @@ namespace Volt
 	// An enumeration that represents the type of a node
 	enum class NodeType
 	{
-		// Will store the entire blockchain data so therefore having no limited features.
+		// Stores the entire blockchain data so therefore having no limited features. This kind of node can make transactions,
+		// verify other transactions, mine new blocks solo, provide blockchain data for solo miners in the same LAN and
+		// provide blockchain data for pool miners anywhere.
 		FULL,
 
-		// Can either store blockchain data generated forward of wallet creation, or can point to a full node for 
-		// broadcasting transactions therefore avoiding having to store any blockchain data at all.
+		// Doesn't store blockchain data therefore transactions made by the wallet are transmitted to a full node for 
+		// verifying the transaction before the transaction is then broadcasted to the network (the miners more specifically) 
+		// so it can be included in the blockchain.
 		WALLET,
 
-		// Can either store the entire blockchain data or point to a full node on the same local area network therefore
-		// avoiding having to store any blockchain data. Also will hold mempool data.
+		// Can either store the entire blockchain data locally on the its own machine or point to a full node in the same LAN 
+		// therefore avoiding having to store any blockchain data, however it will store the current state of the mempool.
+		// This node mines blocks on its own unlike pool miners.
 		SOLO_MINER
 	};
 
