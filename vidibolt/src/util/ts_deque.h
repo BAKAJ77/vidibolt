@@ -4,7 +4,6 @@
 #include <util/volt_api.h>
 
 #include <memory>
-#include <vector>
 #include <deque>
 #include <mutex>
 
