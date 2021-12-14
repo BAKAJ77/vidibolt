@@ -17,6 +17,7 @@ namespace Volt
 	// are stored in a stack (aka F-I-L-O) format.
 	class MessageIterator
 	{
+		friend struct Message;
 	private:
 		const Message& msg;
 		const uint8_t* currentOffset;
@@ -31,12 +32,6 @@ namespace Volt
 		// Returns the next data element in message object, the type of the data is assumed to be a string.
 		template<>
 		VOLT_EXPORT std::string GetNextElementData<std::string>();
-
-		// Returns pointer to the start of the message payload data array. 
-		VOLT_API const uint8_t* GetBegin() const;
-
-		// Returns pointer to the end of the message payload data array.
-		VOLT_API const uint8_t* GetEnd() const;
 
 		// Returns TRUE if all data in message object hasn't been iterated through, else FALSE is returned.
 		VOLT_API bool HasNextElement() const;
@@ -99,8 +94,11 @@ namespace Volt
 		// when pushing data it should be "msg << x << y;" so when pulling the data back out it should be "msg >> y >> x;".
 		friend extern VOLT_API Message& operator>>(Message& message, std::string& string);
 
-		// Returns iterator for iterating over message payload data.
-		VOLT_API MessageIterator GetIterator() const;
+		// Returns iterator pointing to the start of the message payload data array. 
+		VOLT_API MessageIterator GetBegin() const;
+
+		// Returns iterator pointing to the end of the message payload data array.
+		VOLT_API MessageIterator GetEnd() const;
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

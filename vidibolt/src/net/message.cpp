@@ -8,9 +8,18 @@ namespace Volt
 
 	Message::~Message() = default;
 
-	MessageIterator Message::GetIterator() const
+	MessageIterator Message::GetBegin() const
 	{
-		return MessageIterator(*this);
+		MessageIterator it(*this);
+		it.currentOffset = it.msg.payload.data() + it.msg.header.sizeBytes;
+		return it;
+	}
+
+	MessageIterator Message::GetEnd() const
+	{
+		MessageIterator it(*this);
+		it.currentOffset = it.msg.payload.data();
+		return it;
 	}
 
 	std::ostream& operator<<(std::ostream& outStream, const Message& msg)
@@ -89,16 +98,6 @@ namespace Volt
 	{}
 
 	MessageIterator::~MessageIterator() = default;
-
-	const uint8_t* MessageIterator::GetBegin() const
-	{
-		return this->msg.payload.data();
-	}
-
-	const uint8_t* MessageIterator::GetEnd() const
-	{
-		return this->msg.payload.data() + this->msg.header.sizeBytes;
-	}
 
 	bool MessageIterator::HasNextElement() const
 	{
