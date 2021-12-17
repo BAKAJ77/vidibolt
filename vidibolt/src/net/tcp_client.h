@@ -37,7 +37,11 @@ namespace Volt
 		// Pushes message data into pending queue in order to be transmitted.
 		VOLT_API void PushOutboundMessage(const Message& msg);
 
-		// Transmits all pending messages and recieves all pending incoming messages.
+		// Only transmits all pending outbound messages.
+		// An error code is returned in the event of a failure occurring.
+		VOLT_API ErrorCode TransmitOutboundMessages();
+
+		// Transmits all pending outbound messages and recieves all pending incoming messages.
 		// An error code is returned in the event of a failure occurring.
 		VOLT_API ErrorCode UpdateState();
 

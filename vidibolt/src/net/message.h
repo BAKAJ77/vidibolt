@@ -42,10 +42,13 @@ namespace Volt
 	// An enumeration which holds the purpose of indicating what type of message is being sent/recieved.
 	enum class MessageRepType : uint32_t
 	{
+		// Message IDs related to adding other peer nodes to your node's peer list.
 		NODE_GUID_REQUEST,
 		NODE_GUID_RESPONSE,
+
+		// Message IDs related to requesting the balance held by a specified address from other peer nodes.
 		ADDRESS_AMOUNT_REQUEST,
-		ADDRESS_AMOUNT_RESPONSE
+		ADDRESS_AMOUNT_RESPONSE,
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

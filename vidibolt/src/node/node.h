@@ -1,14 +1,17 @@
 #ifndef VIDIBOLT_NODE_H
 #define VIDIBOLT_NODE_H
 
-#include <util/volt_api.h>
-#include <util/ts_unordered_map.h>
+#include <core/chain.h>
+#include <core/mem_pool.h>
+#include <core/transaction.h>
 #include <net/tcp_client.h>
 #include <net/tcp_server.h>
-#include <core/transaction.h>
-#include <core/mem_pool.h>
+#include <util/volt_api.h>
+#include <util/ts_vector.h>
 
 #include <memory>
+#include <future>
+#include <variant>
 
 namespace Volt
 {
@@ -35,28 +38,60 @@ namespace Volt
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// A struct which holds data about a peer node in a node's peer list
+	// A struct which holds data about a peer node in a node's peer list.
 	struct Peer
 	{
 		NodeType type;
+		uint64_t guid;
 		std::string ipAddress;
+		bool storesFullBlockchain;
 	};
-
+	 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Handles VOLT node functionality e.g. broadcasting data to other nodes, recieving data from other nodes etc.
+	// Also, note that nodes must have either a full node or a solo miner node which stores a full copy of the blockchain in
+	// order to request other peer nodes to do tasks which involve operations around the blockchain e.g. requesting the balance
+	// tied to a public key address from another peer node.
 	class Node
 	{
 	private:
 		class Implementation;
 		std::unique_ptr<Implementation> impl;
 	private:
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		// These functions are defined and implemented elsewhere but rely on access to private members of this class
+
+		friend extern VOLT_API ErrorCode AddPeerNode(Node& node, const std::string& ipAddress);
+		friend extern VOLT_API ErrorCode RequestAddressBalance(Node& node, const ECKeyPair& publicKey,
+			std::future<std::variant<double>>& returnedVal);
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	private:
+		using PendingOperationReturn = std::pair<uint32_t, std::promise<std::variant<double>>>;
+
+		// Attemps to connect to peer node. Specified number of attempts are made on failures to connect before giving up and 
+		// returning an error.
+		VOLT_API ErrorCode AttemptPeerConnect(const std::string& ipAddress, size_t maxAttempts = 3);
+
+		// Returns a randomly generated unoccupied request ID.
+		VOLT_API uint32_t GenerateRequestID() const;
+
+		// Handles data being transmitted outbound of node and data being recieved from other nodes.
+		VOLT_API ErrorCode HandleIOData();
+
 		// Returns the client side TCP handler object.
 		VOLT_API TCPClient& GetClient();
 		
 		// Returns the server side TCP handler object.
 		VOLT_API TCPServer& GetServer();
+
+		// Returns vector of pending/recieved returned data from requested operations executed by peer nodes.
+		VOLT_API Vector<PendingOperationReturn>& GetPendingReturnsFromOperations();
 	public:
+		using OperationReturn = std::future<std::variant<double>>;
+
 		VOLT_API Node(NodeType type, MemPool* mempool, Chain* chain, uint32_t port = 60000, 
 			uint64_t nodeNetworkID = VOLT_MAINNET_NETWORK_ID);
 		VOLT_API Node(const Node& node) = delete;
@@ -64,12 +99,9 @@ namespace Volt
 		VOLT_API ~Node();
 
 		VOLT_API void operator=(const Node& node) = delete;
-
-		// Send request to the peer node to return the data about it necessary to be added to the peer list
-		friend extern VOLT_API ErrorCode AddPeerNode(Node& node, const std::string& ipAddress);
 		
 		// Assigns the node with the GUID given and a list of direct peers.
-		VOLT_API void InitNode(uint64_t guid, const UnorderedMap<uint64_t, Peer>* peerList = nullptr);
+		VOLT_API void InitNode(uint64_t guid, const Vector<Peer>* peerList = nullptr);
 
 		// Should be called every now and then so all pending outbound messages are transmitted and all pending inbound
 		// messages are recieved.
@@ -88,7 +120,7 @@ namespace Volt
 		VOLT_API const uint64_t& GetNetworkID() const;
 
 		// Returns the peer list held by the node.
-		VOLT_API const UnorderedMap<uint64_t, Peer>& GetPeerList() const;
+		VOLT_API const Vector<Peer>& GetPeerList() const;
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

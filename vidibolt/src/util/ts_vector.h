@@ -57,6 +57,12 @@ namespace Volt
 				this->vector.emplace_back(data);
 			}
 
+			void EmplaceBackElement(Ty&& data)
+			{
+				std::scoped_lock lock(this->mutex);
+				this->vector.emplace_back(std::move(data));
+			}
+
 			void PopBackElement()
 			{
 				std::scoped_lock lock(this->mutex);
@@ -87,10 +93,22 @@ namespace Volt
 				this->vector.erase(elementLoc);
 			}
 
+			Ty& GetFrontElement()
+			{
+				std::scoped_lock lock(this->mutex);
+				return this->vector.front();
+			}
+
 			const Ty& GetFrontElement() const
 			{
 				std::scoped_lock lock(this->mutex);
 				return this->vector.front();
+			}
+
+			Ty& GetBackElement()
+			{
+				std::scoped_lock lock(this->mutex);
+				return this->vector.back();
 			}
 
 			const Ty& GetBackElement() const
@@ -150,6 +168,9 @@ namespace Volt
 
 		// Emplaces the element to the back of the vector.
 		VOLT_EXPORT void EmplaceBackElement(const Ty& data);
+		
+		// Emplaces the element to the back of the vector.
+		VOLT_EXPORT void EmplaceBackElement(Ty&& data);
 
 		// Removes the element at the back of the vector.
 		VOLT_EXPORT void PopBackElement();
@@ -164,7 +185,13 @@ namespace Volt
 		VOLT_EXPORT void EraseElementAtIndex(size_t index);
 
 		// Returns the first element in the vector.
+		VOLT_EXPORT Ty& GetFrontElement();
+
+		// Returns the first element in the vector.
 		VOLT_EXPORT const Ty& GetFrontElement() const;
+
+		// Returns the last element in the vector. 
+		VOLT_EXPORT Ty& GetBackElement();
 
 		// Returns the last element in the vector. 
 		VOLT_EXPORT const Ty& GetBackElement() const;

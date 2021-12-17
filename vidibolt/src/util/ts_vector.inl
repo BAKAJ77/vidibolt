@@ -34,6 +34,11 @@ namespace Volt
 		this->impl->EmplaceBackElement(data);
 	}
 
+	template<typename Ty> void Vector<Ty>::EmplaceBackElement(Ty&& data)
+	{
+		this->impl->EmplaceBackElement(std::move(data));
+	}
+
 	template<typename Ty> void Vector<Ty>::PopBackElement()
 	{
 		this->impl->PopBackElement();
@@ -54,9 +59,19 @@ namespace Volt
 		this->impl->EraseElementAtIndex(index);
 	}
 
+	template<typename Ty> Ty& Vector<Ty>::GetFrontElement()
+	{
+		return this->impl->GetFrontElement();
+	}
+
 	template<typename Ty> const Ty& Vector<Ty>::GetFrontElement() const
 	{
 		return this->impl->GetFrontElement();
+	}
+
+	template<typename Ty> Ty& Vector<Ty>::GetBackElement()
+	{
+		return this->impl->GetBackElement();
 	}
 
 	template<typename Ty> const Ty& Vector<Ty>::GetBackElement() const

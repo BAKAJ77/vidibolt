@@ -35,6 +35,10 @@ namespace Volt
 		// Closes the socket which the connection is established through.
 		VOLT_API void CloseSocket();
 
+		// Only transmits all pending outbound messages.
+		// An error code is returned in the event of an error occurring.
+		VOLT_API ErrorCode TransmitOutboundOnly();
+
 		// Transmits all pending outbound messages and recieves all pending inbound messages.
 		// An error code is returned in the event of an error occurring.
 		VOLT_API ErrorCode FlushSocket();

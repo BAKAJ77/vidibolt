@@ -2,6 +2,7 @@
 
 #include <boost/bind/bind.hpp>
 #include <vector>
+#include <mutex>
 
 namespace Volt
 {
@@ -14,6 +15,8 @@ namespace Volt
 		asio::ip::tcp::socket socket;
 		Deque<RecievedMessage>& inboundMsgs;
 		Deque<Message> outboundMsgs;
+
+		std::mutex mutex;
 	private:
 		// Callback handler function which checks for errors once the message data has been sent.
 		void OnTransmissionCompletion(const system::error_code& ec, size_t bytesSent, system::error_code& ecOut)
@@ -83,8 +86,45 @@ namespace Volt
 			this->socket.close();
 		}
 
+		ErrorCode TransmitOutboundOnly()
+		{
+			std::scoped_lock lock(this->mutex);
+
+			std::vector<uint8_t> transmitBuffer;
+			system::error_code operationError;
+
+			// Transmit next message in the pending outbound messages queue
+			if (!this->outboundMsgs.IsEmpty() && this->socket.is_open())
+			{
+				// Get the next outbound message in queue
+				const Message OUTBOUND_MSG = this->outboundMsgs.GetFrontElement();
+				this->outboundMsgs.PopFrontElement();
+
+				// Setup the transmission buffer
+				this->SetupBuffer(transmitBuffer, sizeof(Header) + OUTBOUND_MSG.header.sizeBytes);
+
+				memcpy(transmitBuffer.data(), &OUTBOUND_MSG.header, sizeof(Header));
+				memcpy(transmitBuffer.data() + sizeof(Header), OUTBOUND_MSG.payload.data(), OUTBOUND_MSG.payload.size());
+
+				// Begin asynchronous write operation to the socket out stream
+				asio::async_write(this->socket, asio::buffer(transmitBuffer.data(), transmitBuffer.size()),
+					boost::bind(&Implementation::OnTransmissionCompletion, this, asio::placeholders::error,
+						asio::placeholders::bytes_transferred, std::ref(operationError)));
+			}
+
+			this->ctx.restart();
+			this->ctx.run();
+
+			if (operationError)
+				return (ErrorID)operationError.value();
+
+			return ErrorID::NONE;
+		}
+
 		ErrorCode FlushSocket()
 		{
+			std::scoped_lock lock(this->mutex);
+
 			std::vector<uint8_t> transmitBuffer, recieveBuffer;
 			system::error_code errorCodeTransmit, errorCodeRecieve;
 
@@ -187,6 +227,11 @@ namespace Volt
 	void Connection::CloseSocket() 
 	{
 		this->impl->CloseSocket();
+	}
+
+	ErrorCode Connection::TransmitOutboundOnly()
+	{
+		return this->impl->TransmitOutboundOnly();
 	}
 
 	ErrorCode Connection::FlushSocket()

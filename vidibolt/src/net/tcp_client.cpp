@@ -29,19 +29,24 @@ namespace Volt
 
 		ErrorCode Connect(const std::string& address)
 		{
-			// Setup connection shared pointer object, then resolve endpoints
-			ConnectionPtr connection = Volt::CreateConnection(this->inboundMsgs);
-			auto endpoints = this->resolver.resolve(address, std::to_string(this->port));
+			if (!this->outboundConnection)
+			{
+				// Setup connection shared pointer object, then resolve endpoints
+				ConnectionPtr connection = Volt::CreateConnection(this->inboundMsgs);
+				auto endpoints = this->resolver.resolve(address, std::to_string(this->port));
 
-			// Start the synchronous connect operation
-			system::error_code ec;
-			asio::connect(connection->GetSocketObject(), endpoints, ec);
+				// Start the synchronous connect operation
+				system::error_code ec;
+				asio::connect(connection->GetSocketObject(), endpoints, ec);
 
-			// Check for errors
-			if (ec)
-				return (ErrorID)ec.value();
+				// Check for errors
+				if (ec)
+					return (ErrorID)ec.value();
+				else
+					this->outboundConnection = std::move(connection);
+			}
 			else
-				this->outboundConnection = std::move(connection);
+				return ErrorID::CLIENT_CONNECTION_OCCUPIED;
 
 			return ErrorID::NONE;
 		}
@@ -55,6 +60,14 @@ namespace Volt
 		{
 			if (this->outboundConnection)
 				this->outboundConnection->PushOutboundMessage(msg);
+		}
+
+		ErrorCode TransmitOutboundMessages()
+		{
+			if (this->outboundConnection)
+				return this->outboundConnection->TransmitOutboundOnly();
+
+			return ErrorID::NONE;
 		}
 
 		ErrorCode UpdateState()
@@ -104,6 +117,11 @@ namespace Volt
 	void TCPClient::PushOutboundMessage(const Message& msg)
 	{
 		this->impl->PushOutboundMessage(msg);
+	}
+
+	ErrorCode TCPClient::TransmitOutboundMessages()
+	{
+		return this->impl->TransmitOutboundMessages();
 	}
 
 	ErrorCode TCPClient::UpdateState()
