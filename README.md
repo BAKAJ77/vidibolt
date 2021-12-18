@@ -1,4 +1,4 @@
-# Vidibolt Core integration/staging tree
+# Vidibolt Core integration/staging tree (Archived)
 
 ## What is Vidibolt?
 Vidibolt is a decentralised cryptocurrency network which aims to provide fast video streaming service to audiences in a distributed manner. 
